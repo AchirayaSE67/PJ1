@@ -347,7 +347,7 @@ async function endUsage(customerId, rentalId) {
        FROM rental r
        LEFT JOIN session s ON s.rental_id = r.rental_id AND s.status = 'active'
        WHERE r.rental_id = ? AND r.customer_id = ?
-       FOR UPDATE`,
+       FOR UPDATE OF r`,
       [rentalId, customerId]
     );
     const rental = rows[0];
