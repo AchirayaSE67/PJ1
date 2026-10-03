@@ -114,6 +114,14 @@ function mountProfileDrawer(user) {
   });
 }
 
+let drawerRemain = null;
+setInterval(() => {
+  const label = document.getElementById('drawer-rental');
+  if (!label || !drawerRemain) return;
+  const left = Math.max(0, drawerRemain.base - Math.floor((Date.now() - drawerRemain.at) / 1000));
+  label.textContent = `${drawerRemain.code} · เหลือ ${formatCountdown(left)}`;
+}, 1000);
+
 async function loadDrawerData() {
   try {
     const { rentals = [] } = await api('/rentals/active');
@@ -121,8 +129,9 @@ async function loadDrawerData() {
     const label = document.getElementById('drawer-rental');
     if (!label) return;
     if (active) {
+      drawerRemain = { code: active.computerCode, base: Number(active.remainingSeconds || 0), at: Date.now() };
       label.textContent = `${active.computerCode} · เหลือ ${formatCountdown(active.remainingSeconds)}`;
-    } else if (rentals.length) {
+    } else if (drawerRemain = null, rentals.length) {
       label.textContent = `${rentals.length} รายการจองที่กำลังจะเริ่ม`;
     } else {
       label.textContent = 'ยังไม่มีรายการใช้งานในขณะนี้';

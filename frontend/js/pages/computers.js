@@ -5,7 +5,7 @@ import { statusLabel, formatCountdown, formatMoney } from '../format.js';
 renderNav('computers');
 const listEl = document.getElementById('list');
 let computers = [];
-const loadedAt = Date.now();
+let loadedAt = Date.now();
 
 function remainingNow(pc) {
   if (pc.status !== 'in_use') return 0;
@@ -33,8 +33,13 @@ function render() {
   }).join('');
 }
 
-computers = (await api('/computers')).computers;
-render();
+async function refresh() {
+  computers = (await api('/computers')).computers;
+  loadedAt = Date.now();
+  render();
+}
+await refresh();
+setInterval(() => { void refresh().catch(() => {}); }, 30000);
 setInterval(() => {
   listEl.querySelectorAll('[data-pc]').forEach((el) => {
     const pc = computers.find((c) => String(c.computerId) === el.dataset.pc);

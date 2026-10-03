@@ -7,7 +7,8 @@ if (!requireLogin(location.pathname + location.search)) throw new Error('login')
 
 const box = document.getElementById('content');
 const id = new URLSearchParams(location.search).get('id');
-const loadedAt = Date.now();
+let loadedAt = Date.now();
+let keyRentalId = null;
 let currentRentals = [];
 let walletBalance = 0;
 let extensionRental = null;
@@ -63,7 +64,7 @@ function extensionModal() {
       <span class="extend-custom-label">กำหนดระยะเวลาเอง</span>
       <div class="extend-custom-input-wrap"><input id="extend-custom-hours" type="number" min="1" step="1" inputmode="numeric" aria-label="กำหนดจำนวนชั่วโมงเอง"><span class="extend-unit">ชม.</span></div>
     </div>
-    <div class="extend-summary"><div><span>เครดิตคงเหลือ</span><strong id="extend-balance">-</strong></div><div><span>ค่าบริการเพิ่ม</span><strong id="extend-cost">-</strong></div><div><span>เครดิตหลังต่อเวลา</span><strong id="extend-after">-</strong></div></div>
+    <div class="extend-summary"><div><span>เครดิตคงเหลือ</span><strong id="extend-balance">-</strong></div><div><span>ค่าบริการเพิ่ม</span><strong id="extend-cost">-</strong></div><div><span>เครดิตหลังต่อเวลา</span><strong id="extend-after">-</strong></div><div><span>เวลาสิ้นสุดใหม่</span><strong id="extend-newend">-</strong></div></div>
     <div id="extend-msg"></div>
     <div class="btn-row modal-actions"><button class="btn secondary" id="extend-cancel">ยกเลิก</button><button class="btn" id="extend-confirm">ยืนยันเพิ่มเวลา</button></div>
   </div>`;
@@ -101,13 +102,15 @@ function updateExtensionQuote() {
   document.getElementById('extend-balance').textContent = formatMoney(walletBalance);
   document.getElementById('extend-cost').textContent = formatMoney(cost);
   document.getElementById('extend-after').textContent = formatMoney(Math.max(0, walletBalance - cost));
+  const baseEnd = new Date(extensionRental.endTime).getTime();
+  document.getElementById('extend-newend').textContent = Number.isFinite(baseEnd) ? formatDateTime(new Date(baseEnd + m * 60000)) : '-';
   document.getElementById('extend-confirm').disabled = walletBalance < cost;
 }
 
 function openExtension(rental) {
   extensionModal();
   extensionRental = rental;
-  document.getElementById('extend-machine').innerHTML = `<strong>เครื่อง ${rental.computerCode}</strong><span>เหลือเวลา ${formatCountdown(remainingOf(rental))}</span>`;
+  document.getElementById('extend-machine').innerHTML = `<strong>เครื่อง ${rental.computerCode}</strong><span>เหลือเวลา <b id="extend-remain">${formatCountdown(remainingOf(rental))}</b></span>`;
   document.getElementById('extend-msg').innerHTML = '';
   document.querySelectorAll('.extend-option').forEach(b => b.classList.remove('selected'));
   document.querySelector('.extend-option[data-minutes="60"]').classList.add('selected');
@@ -196,7 +199,8 @@ function keyModal() {
       <div class="key-remain">เวลาที่เหลือ <strong id="key-remain"></strong></div>
     </div>
     <ol class="access-steps">
-      <li>เปิดโปรแกรมรีโมต (เช่น Parsec) แล้วล็อกอินด้วยบัญชีของคุณ</li>
+      <li>ดาวน์โหลดและติดตั้ง Parsec ได้ที่ <a href="https://parsec.app/downloads" target="_blank" rel="noopener noreferrer" class="parsec-link">parsec.app/downloads</a></li>
+      <li>เปิดโปรแกรม Parsec แล้วล็อกอินด้วยบัญชีของคุณ (ถ้ายังไม่มี สมัครฟรีได้ในโปรแกรม)</li>
       <li>เลือกเครื่องที่เช่า แล้วใส่คีย์ด้านบนเมื่อระบบถาม</li>
       <li>เมื่อหมดเวลา คีย์จะใช้ไม่ได้ทันที</li>
     </ol>
@@ -222,6 +226,7 @@ async function openKeyWindow(rental, card) {
   msg.innerHTML = '';
   try {
     const data = await api(`/rentals/${rental.rentalId}/open`, { method: 'POST' });
+    keyRentalId = rental.rentalId;
     const modal = keyModal();
     modal.querySelector('#key-title').textContent = `คีย์เข้าใช้งานเครื่อง ${data.computerCode}`;
     modal.querySelector('#key-value').textContent = data.accessKey;
@@ -272,6 +277,7 @@ async function load() {
     id ? api(`/rentals/${id}`).then(d => ({ rentals: [d.rental] })) : api('/rentals/active'),
     api('/wallet')
   ]);
+  loadedAt = Date.now(); // ค่าเวลาที่เหลือจากเซิร์ฟเวอร์เพิ่งสดใหม่ เริ่มนับจากตรงนี้
   currentRentals = rentalData.rentals || [];
   walletBalance = Number(wallet.balance || 0);
   document.getElementById('rental-count').textContent = `${currentRentals.filter(r => r.status === 'active').length} เครื่อง`;
@@ -320,5 +326,16 @@ setInterval(() => {
       if (warningState.get(rental.rentalId) !== level) warningState.set(rental.rentalId, level);
     }
   });
+  const live = id => {
+    const r = currentRentals.find(x => String(x.rentalId) === String(id));
+    return r ? formatCountdown(remainingOf(r)) : null;
+  };
+  const kr = document.getElementById('key-remain');
+  if (kr && keyRentalId && !document.getElementById('key-modal').classList.contains('hidden')) kr.textContent = live(keyRentalId) || kr.textContent;
+  const er = document.getElementById('extend-remain');
+  if (er && extensionRental) er.textContent = live(extensionRental.rentalId) || er.textContent;
 }, 1000);
+
+// ดึงค่าสดจากเซิร์ฟเวอร์ใหม่ทุก 30 วินาที ให้เวลาตรงกับเซิร์ฟเวอร์เสมอ
+setInterval(() => { void load().catch(() => {}); }, 30000);
 

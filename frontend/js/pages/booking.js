@@ -1,6 +1,7 @@
 import { renderNav } from '../nav.js';
 import { api, requireLogin } from '../api.js';
 import { formatMoney, formatDateTime } from '../format.js';
+import { syncServerTime, serverNow } from '../serverClock.js';
 
 renderNav('computers');
 if (!requireLogin(location.pathname + location.search)) throw new Error('login');
@@ -32,13 +33,14 @@ try {
     api('/wallet')
   ]);
   const computer = computerData.computer;
+  syncServerTime(quote.startTime);
 
   box.innerHTML = `
     <div class="kicker">CONFIRM SERVICE</div>
     <h2>ตรวจสอบและยืนยันการใช้บริการ ${computer.computerCode}</h2>
     <div class="row"><span>CPU / GPU</span><span>${computer.cpu} / ${computer.gpu}</span></div>
-    <div class="row"><span>เริ่ม</span><span>${formatDateTime(quote.startTime)}</span></div>
-    <div class="row"><span>สิ้นสุด</span><span>${formatDateTime(quote.endTime)}</span></div>
+    <div class="row"><span>เริ่ม (ทันทีเมื่อกดยืนยัน)</span><span id="start-live">${formatDateTime(quote.startTime)}</span></div>
+    <div class="row"><span>สิ้นสุด</span><span id="end-live">${formatDateTime(quote.endTime)}</span></div>
     <div class="row"><span>จำนวนชั่วโมง</span><span>${quote.hours}</span></div>
     <div class="row"><span>ราคารวม</span><b>${formatMoney(quote.totalPrice)}</b></div>
     <div class="row"><span>เครดิตคงเหลือ</span><span>${formatMoney(wallet.balance)}</span></div>
@@ -48,6 +50,12 @@ try {
       <a class="btn secondary" href="/pages/computer.html?id=${computerId}">ย้อนกลับ</a>
     </div>
   `;
+
+  setInterval(() => {
+    const s = serverNow();
+    document.getElementById('start-live').textContent = formatDateTime(s);
+    document.getElementById('end-live').textContent = formatDateTime(new Date(s.getTime() + Number(quote.hours) * 3600 * 1000));
+  }, 1000);
 
   document.getElementById('confirm').addEventListener('click', async () => {
     const btn = document.getElementById('confirm');

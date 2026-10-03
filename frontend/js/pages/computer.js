@@ -1,13 +1,19 @@
 import { renderNav } from '../nav.js';
 import { api, getToken } from '../api.js';
 import { statusLabel, formatCountdown, formatMoney, formatDateTime } from '../format.js';
+import { syncServerTime, serverNow } from '../serverClock.js';
 
 renderNav('computers');
 
 const id = new URLSearchParams(location.search).get('id');
 const box = document.getElementById('content');
-const { computer } = await api(`/computers/${id}`);
-const loadedAt = Date.now();
+let { computer } = await api(`/computers/${id}`);
+let loadedAt = Date.now();
+// ขอเวลาปัจจุบันของเซิร์ฟเวอร์ (เวลาเริ่มในหน้าสรุปราคาคือเวลาเซิร์ฟเวอร์)
+try {
+  const q = await api(`/computers/quote?computerId=${id}&hours=1&startTime=${encodeURIComponent(new Date().toISOString())}`);
+  syncServerTime(q.startTime);
+} catch (err) {}
 
 function remainingNow() {
   const elapsed = Math.floor((Date.now() - loadedAt) / 1000);
@@ -21,7 +27,7 @@ function selectedHours() {
 }
 
 function getLiveStart() {
-  const now = new Date();
+  const now = serverNow();
   const pad = (n) => String(n).padStart(2, '0');
   const value = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
   const display = now.toLocaleTimeString('th-TH', { hour12: false });
@@ -138,6 +144,13 @@ if (isAvailable) {
 }
 
 if (isInUse) {
+  setInterval(async () => {
+    try {
+      const fresh = await api(`/computers/${id}`);
+      computer = fresh.computer;
+      loadedAt = Date.now();
+    } catch (err) {}
+  }, 30000);
   setInterval(() => {
     const remain = document.getElementById('remain');
     if (remain) remain.textContent = formatCountdown(remainingNow());

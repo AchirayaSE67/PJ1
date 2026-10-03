@@ -5718,3 +5718,10 @@ tr:hover td {
   color:#eef2ff !important;
   border:1px solid #34415f !important;
 }
+
+.access-steps .parsec-link {
+  color:var(--cyan);
+  font-weight:600;
+  text-decoration:underline;
+  text-underline-offset:3px;
+}
