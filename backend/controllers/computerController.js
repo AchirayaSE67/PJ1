@@ -20,7 +20,7 @@ const quote = asyncHandler(async (req, res) => {
   if (!computer) {
     return res.status(404).json({ message: 'ไม่พบเครื่องคอมพิวเตอร์' });
   }
-  const result = rentalService.calcQuote(computer.pricePerHour, req.query.hours, req.query.startTime);
+  const result = rentalService.calcQuote(computer.pricePerHour, req.query.hours, new Date());
   res.json({
     hours: result.hours,
     startTime: result.startTime,
