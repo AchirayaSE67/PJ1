@@ -13,12 +13,11 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
       body: JSON.stringify({
         fullName: form.get('fullName'),
         email: form.get('email'),
-        phone: form.get('phone'),
         password: form.get('password')
       })
     });
     setSession(data.token, data.user);
-    location.href = '/pages/index.html';
+    location.href = '/pages/verify-email.html?sent=1';
   } catch (err) {
     msg.innerHTML = `<div class="alert error">${err.message}</div>`;
   }

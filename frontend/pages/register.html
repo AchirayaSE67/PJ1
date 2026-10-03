@@ -20,18 +20,6 @@
       <input name="fullName" required>
       <label>อีเมล</label>
       <input name="email" type="email" required>
-      <label>เบอร์โทร</label>
-<input
-  name="phone"
-  type="tel"
-  inputmode="numeric"
-  pattern="[0-9]{10}"
-  minlength="10"
-  maxlength="10"
-  placeholder=""
-  autocomplete="tel"
-  oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)"
->
       <label>รหัสผ่าน</label>
       <input name="password" type="password" minlength="6" required>
       <div class="btn-row"><button class="btn" type="submit">สร้างบัญชี</button></div>

@@ -11,14 +11,14 @@ async function findById(id) {
   return rows[0] || null;
 }
 
-async function create({ email, passwordHash, fullName, phone }) {
+async function create({ email, passwordHash, fullName }) {
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
     const [result] = await conn.query(
-      `INSERT INTO customer (email, password_hash, full_name, phone, role)
-       VALUES (?, ?, ?, ?, 'customer') RETURNING customer_id`,
-      [email, passwordHash, fullName, phone || null]
+      `INSERT INTO customer (email, password_hash, full_name, role, email_verified)
+       VALUES (?, ?, ?, 'customer', FALSE) RETURNING customer_id`,
+      [email, passwordHash, fullName]
     );
     await conn.query(
       'INSERT INTO wallet (customer_id, balance) VALUES (?, 0.00)',
@@ -34,16 +34,20 @@ async function create({ email, passwordHash, fullName, phone }) {
   }
 }
 
-async function updateProfile(id, { fullName, phone }) {
+async function updateProfile(id, { fullName }) {
   await pool.query(
-    'UPDATE customer SET full_name = ?, phone = ? WHERE customer_id = ?',
-    [fullName, phone || null, id]
+    'UPDATE customer SET full_name = ? WHERE customer_id = ?',
+    [fullName, id]
   );
   return findById(id);
 }
 
 async function updatePassword(id, passwordHash) {
   await pool.query('UPDATE customer SET password_hash = ? WHERE customer_id = ?', [passwordHash, id]);
+}
+
+async function setEmailVerified(id) {
+  await pool.query('UPDATE customer SET email_verified = TRUE WHERE customer_id = ?', [id]);
 }
 
 async function addTimeBalance(conn, customerId, minutes) {
@@ -72,6 +76,7 @@ module.exports = {
   create,
   updateProfile,
   updatePassword,
+  setEmailVerified,
   addTimeBalance,
   listAll,
   mapCustomer

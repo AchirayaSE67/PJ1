@@ -7,6 +7,7 @@ const cors = require('cors');
 const { errorHandler } = require('./middleware/errorHandler');
 const rentalService = require('./services/rentalService');
 const topupModel = require('./models/topupModel');
+const emailTokenModel = require('./models/emailTokenModel');
 
 const authRoutes = require('./routes/authRoutes');
 const profileRoutes = require('./routes/profileRoutes');
@@ -44,6 +45,10 @@ app.use(errorHandler);
 app.listen(PORT, async () => {
   console.log(`PC Rental server: http://localhost:${PORT}`);
   try { await topupModel.ensureTable(); } catch (err) { console.error('Topup table:', err.message); }
+  try {
+    await emailTokenModel.ensureTable();
+    await emailTokenModel.purgeOld();
+  } catch (err) { console.error('Email token table:', err.message); }
   rentalService.startSessionWatcher();
   setInterval(() => topupModel.expireOld().catch(() => {}), 30000);
 });

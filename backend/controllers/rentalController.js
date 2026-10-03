@@ -1,9 +1,21 @@
 const rentalService = require('../services/rentalService');
 const rentalModel = require('../models/rentalModel');
 const ratingModel = require('../models/ratingModel');
+const customerModel = require('../models/customerModel');
 const { asyncHandler } = require('../middleware/errorHandler');
 
+// บัญชีที่ยังไม่ยืนยันอีเมลเข้าเว็บได้ แต่เช่า/ต่อเวลาไม่ได้
+async function requireVerifiedEmail(req, res) {
+  const customer = await customerModel.findById(req.user.customerId);
+  if (customer && customer.email_verified === false) {
+    res.status(403).json({ message: 'กรุณายืนยันอีเมลก่อนเช่าเครื่อง (ดูลิงก์ในอีเมล หรือกดส่งลิงก์ใหม่ที่หน้าโปรไฟล์)' });
+    return false;
+  }
+  return true;
+}
+
 const book = asyncHandler(async (req, res) => {
+  if (!(await requireVerifiedEmail(req, res))) return;
   const { computerId, hours, startTime } = req.body;
   if (!computerId || !hours || !startTime) {
     return res.status(400).json({ message: 'กรุณาเลือกเครื่อง จำนวนชั่วโมง และเวลาเริ่มต้น' });
@@ -36,6 +48,7 @@ const detail = asyncHandler(async (req, res) => {
 });
 
 const extendTime = asyncHandler(async (req, res) => {
+  if (!(await requireVerifiedEmail(req, res))) return;
   const minutes = Number(req.body.minutes);
   if (!Number.isSafeInteger(minutes) || minutes < 30 || minutes % 30 !== 0) {
     return res.status(400).json({ message: 'เวลาที่เพิ่มต้องเป็นจำนวนเต็ม และเพิ่มครั้งละ 30 นาทีขึ้นไป' });

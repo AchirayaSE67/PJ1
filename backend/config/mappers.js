@@ -4,7 +4,7 @@ function mapCustomer(row) {
     customerId: row.customer_id,
     email: row.email,
     fullName: row.full_name,
-    phone: row.phone,
+    emailVerified: row.email_verified !== false,
     role: row.role,
     timeBalanceMinutes: row.time_balance_minutes,
     createdAt: row.created_at
