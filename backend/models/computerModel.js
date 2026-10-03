@@ -3,6 +3,12 @@ const { mapComputer } = require('../config/mappers');
 
 const remainingJoin = `
   SELECT c.*,
+    -- สถานะที่แสดง: ดูจากรายการเช่าที่ใช้งานอยู่จริง ไม่พึ่งค่าที่ค้างในคอลัมน์ status
+    CASE
+      WHEN r.rental_id IS NOT NULL THEN 'in_use'
+      WHEN c.status = 'maintenance' THEN 'maintenance'
+      ELSE 'available'
+    END AS display_status,
     r.rental_id AS active_rental_id,
     r.start_time AS active_start_time,
     r.end_time AS active_end_time,

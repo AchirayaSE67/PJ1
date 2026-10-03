@@ -22,7 +22,7 @@ function mapComputer(row) {
     gpu: row.gpu,
     storage: row.storage,
     pricePerHour: Number(row.price_per_hour),
-    status: row.status,
+    status: row.display_status || row.status,
     remainingSeconds: remaining != null && remaining > 0 ? remaining : 0,
     connectionAddress: row.connection_address,
     connectionPort: row.connection_port,
