@@ -110,6 +110,7 @@ CREATE TABLE session (
   status VARCHAR(20) NOT NULL DEFAULT 'active'
     CHECK (status IN ('active', 'ended', 'saved')),
   connection_enabled BOOLEAN NOT NULL DEFAULT TRUE,
+  access_key VARCHAR(20) UNIQUE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_session_rental
     FOREIGN KEY (rental_id) REFERENCES rental(rental_id)

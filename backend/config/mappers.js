@@ -55,7 +55,8 @@ function mapRental(row) {
     connectionEnabled: row.connection_enabled === 1 || row.connection_enabled === true,
     connectionAddress: row.connection_address,
     connectionPort: row.connection_port,
-    connectionMethod: row.connection_method
+    connectionMethod: row.connection_method,
+    accessKey: row.status === 'active' && (row.connection_enabled === 1 || row.connection_enabled === true) ? row.access_key || null : null
   };
 }
 

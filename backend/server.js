@@ -15,6 +15,7 @@ const rentalRoutes = require('./routes/rentalRoutes');
 const walletRoutes = require('./routes/walletRoutes');
 const ticketRoutes = require('./routes/ticketRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const accessRoutes = require('./routes/accessRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -29,6 +30,7 @@ app.use('/api/rentals', rentalRoutes);
 app.use('/api/wallet', walletRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/access', accessRoutes);
 
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 app.use(express.static(path.join(__dirname, '../frontend')));

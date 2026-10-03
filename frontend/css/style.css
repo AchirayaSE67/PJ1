@@ -5660,3 +5660,47 @@ tr:hover td {
   }
 }
 
+
+/* คีย์เข้าใช้งานเครื่อง (สไตล์เดียวกับ rental-info-grid) */
+.my-machines-page .access-key-box {
+  margin:19px 23px 0;
+  padding:15px 16px;
+  border:1px solid #2a3b5d;
+  border-radius:16px;
+  background:#0f182b;
+}
+
+.access-key-row {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin:10px 0 12px;
+  flex-wrap:wrap;
+}
+
+.access-key-value {
+  color:var(--cyan);
+  font-family:ui-monospace,Menlo,Consolas,monospace;
+  font-size:22px;
+  font-weight:700;
+  letter-spacing:.08em;
+  word-break:break-all;
+}
+
+.access-key-box .copy-key {
+  min-height:40px;
+  padding:0 16px;
+  border-radius:12px;
+  background:#202a43 !important;
+  color:#eef2ff !important;
+  border:1px solid #34415f !important;
+}
+
+.access-steps {
+  margin:0;
+  padding-left:20px;
+  color:#b9c6de;
+  font-size:13px;
+  line-height:1.7;
+}

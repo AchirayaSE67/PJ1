@@ -182,9 +182,22 @@ async function confirmShutdown() {
   }
 }
 
+function accessKeyPanel(rental) {
+  if (!rental.accessKey) return '';
+  return `<div class="access-key-box">
+    <span class="small-label">คีย์เข้าใช้งานเครื่อง ${rental.computerCode}</span>
+    <div class="access-key-row"><code class="access-key-value">${rental.accessKey}</code><button class="btn secondary copy-key" data-key="${rental.accessKey}">คัดลอก</button></div>
+    <ol class="access-steps">
+      <li>เปิดโปรแกรมรีโมต (เช่น Parsec) แล้วล็อกอินด้วยบัญชีของคุณ</li>
+      <li>เลือกเครื่อง ${rental.computerCode} แล้วใส่คีย์ด้านบนเมื่อระบบถาม</li>
+      <li>เมื่อหมดเวลา คีย์จะใช้ไม่ได้ทันที</li>
+    </ol>
+  </div>`;
+}
+
 function connectionControls(rental) {
   const can = rental.status === 'active' && rental.connectionEnabled;
-  return `<div class="machine-controls">
+  return `${accessKeyPanel(rental)}<div class="machine-controls">
     <div class="controls-heading"><div><span class="small-label">ควบคุมเครื่อง</span><strong>การจัดการเครื่อง</strong></div><span class="connection-method">${rental.connectionMethod || 'Remote'}</span></div>
     <div class="btn-row control-buttons">
       <button class="btn connect-btn" ${can ? '' : 'disabled'}>เปิดเครื่อง</button>
@@ -251,6 +264,13 @@ async function load() {
 }
 
 document.addEventListener('click', e => {
+  if (e.target.classList.contains('copy-key')) {
+    const btn = e.target;
+    navigator.clipboard.writeText(btn.dataset.key).then(() => {
+      btn.textContent = 'คัดลอกแล้ว';
+      setTimeout(() => { btn.textContent = 'คัดลอก'; }, 1500);
+    });
+  }
   if (e.target.id === 'extend-confirm') void confirmExtension();
   if (e.target.id === 'shutdown-confirm') void confirmShutdown();
 });

@@ -1,9 +1,22 @@
+const crypto = require('crypto');
 const pool = require('../config/db');
 const reservationModel = require('../models/reservationModel');
 const walletModel = require('../models/walletModel');
 const computerModel = require('../models/computerModel');
 const rentalModel = require('../models/rentalModel');
 const customerModel = require('../models/customerModel');
+
+// คีย์เข้าเครื่อง รูปแบบ XXXX-XXXX-XXXX สุ่มใหม่ทุกเซสชัน (ตัดตัวอักษรที่สับสน เช่น 0/O 1/I)
+function genAccessKey() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const bytes = crypto.randomBytes(12);
+  let out = '';
+  for (let i = 0; i < 12; i++) {
+    if (i && i % 4 === 0) out += '-';
+    out += chars[bytes[i] % chars.length];
+  }
+  return out;
+}
 
 function parseDbDate(value) {
   if (value instanceof Date) return value;
@@ -123,9 +136,9 @@ async function book({ customerId, computerId, hours, startTime }) {
 
     if (startsNow) {
       await conn.query(
-        `INSERT INTO session (rental_id, started_at, status, connection_enabled)
-         VALUES (?, ?, 'active', TRUE)`,
-        [rentalResult.insertId, startSql]
+        `INSERT INTO session (rental_id, started_at, status, connection_enabled, access_key)
+         VALUES (?, ?, 'active', TRUE, ?)`,
+        [rentalResult.insertId, startSql, genAccessKey()]
       );
     }
 
@@ -404,9 +417,9 @@ async function expireDueRentals() {
       );
       if (!existing.length) {
         await conn.query(
-          `INSERT INTO session (rental_id, started_at, status, connection_enabled)
-           VALUES (?, CURRENT_TIMESTAMP, 'active', TRUE)`,
-          [rental.rental_id]
+          `INSERT INTO session (rental_id, started_at, status, connection_enabled, access_key)
+           VALUES (?, CURRENT_TIMESTAMP, 'active', TRUE, ?)`,
+          [rental.rental_id, genAccessKey()]
         );
       }
       await refreshComputerStatus(conn, rental.computer_id);
