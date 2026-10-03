@@ -3,7 +3,7 @@ const { mapRental } = require('../config/mappers');
 
 const rentalSelect = `
   SELECT r.*, c.computer_code, c.connection_address, c.connection_port, c.connection_method,
-         s.session_id, s.connection_enabled, s.access_key,
+         s.session_id, s.connection_enabled,
          GREATEST(EXTRACT(EPOCH FROM (r.end_time - CURRENT_TIMESTAMP))::integer, 0) AS remaining_seconds
   FROM rental r
   JOIN computer c ON c.computer_id = r.computer_id

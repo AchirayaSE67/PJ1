@@ -182,22 +182,59 @@ async function confirmShutdown() {
   }
 }
 
-function accessKeyPanel(rental) {
-  if (!rental.accessKey) return '';
-  return `<div class="access-key-box">
-    <span class="small-label">คีย์เข้าใช้งานเครื่อง ${rental.computerCode}</span>
-    <div class="access-key-row"><code class="access-key-value">${rental.accessKey}</code><button class="btn secondary copy-key" data-key="${rental.accessKey}">คัดลอก</button></div>
+function keyModal() {
+  let modal = document.getElementById('key-modal');
+  if (modal) return modal;
+  modal = document.createElement('div');
+  modal.id = 'key-modal';
+  modal.className = 'modal-backdrop hidden';
+  modal.innerHTML = `<div class="modal-card" role="dialog" aria-modal="true">
+    <div class="modal-head"><div><div class="kicker">ACCESS KEY</div><h2 id="key-title">คีย์เข้าใช้งานเครื่อง</h2></div><button class="icon-btn" id="key-close">×</button></div>
+    <div class="access-key-box">
+      <span class="small-label">คีย์ของคุณ (ใช้ได้เฉพาะรอบเช่านี้)</span>
+      <div class="access-key-row"><code class="access-key-value" id="key-value"></code><button class="btn secondary" id="key-copy">คัดลอก</button></div>
+      <div class="key-remain">เวลาที่เหลือ <strong id="key-remain"></strong></div>
+    </div>
     <ol class="access-steps">
       <li>เปิดโปรแกรมรีโมต (เช่น Parsec) แล้วล็อกอินด้วยบัญชีของคุณ</li>
-      <li>เลือกเครื่อง ${rental.computerCode} แล้วใส่คีย์ด้านบนเมื่อระบบถาม</li>
+      <li>เลือกเครื่องที่เช่า แล้วใส่คีย์ด้านบนเมื่อระบบถาม</li>
       <li>เมื่อหมดเวลา คีย์จะใช้ไม่ได้ทันที</li>
     </ol>
+    <div class="btn-row modal-actions"><button class="btn secondary" id="key-done">ปิดหน้าต่าง</button></div>
   </div>`;
+  document.body.appendChild(modal);
+  const close = () => modal.classList.add('hidden');
+  modal.querySelector('#key-close').onclick = close;
+  modal.querySelector('#key-done').onclick = close;
+  modal.addEventListener('click', e => { if (e.target === modal) close(); });
+  modal.querySelector('#key-copy').onclick = () => {
+    const btn = modal.querySelector('#key-copy');
+    navigator.clipboard.writeText(modal.querySelector('#key-value').textContent).then(() => {
+      btn.textContent = 'คัดลอกแล้ว';
+      setTimeout(() => { btn.textContent = 'คัดลอก'; }, 1500);
+    });
+  };
+  return modal;
+}
+
+async function openKeyWindow(rental, card) {
+  const msg = card.querySelector('.connect-msg');
+  msg.innerHTML = '';
+  try {
+    const data = await api(`/rentals/${rental.rentalId}/open`, { method: 'POST' });
+    const modal = keyModal();
+    modal.querySelector('#key-title').textContent = `คีย์เข้าใช้งานเครื่อง ${data.computerCode}`;
+    modal.querySelector('#key-value').textContent = data.accessKey;
+    modal.querySelector('#key-remain').textContent = formatCountdown(remainingOf(rental));
+    modal.classList.remove('hidden');
+  } catch (err) {
+    msg.innerHTML = `<div class="alert error">${err.message}</div>`;
+  }
 }
 
 function connectionControls(rental) {
   const can = rental.status === 'active' && rental.connectionEnabled;
-  return `${accessKeyPanel(rental)}<div class="machine-controls">
+  return `<div class="machine-controls">
     <div class="controls-heading"><div><span class="small-label">ควบคุมเครื่อง</span><strong>การจัดการเครื่อง</strong></div><span class="connection-method">${rental.connectionMethod || 'Remote'}</span></div>
     <div class="btn-row control-buttons">
       <button class="btn connect-btn" ${can ? '' : 'disabled'}>เปิดเครื่อง</button>
@@ -257,20 +294,11 @@ async function load() {
   box.querySelectorAll('.connect-btn').forEach(btn => btn.onclick = () => {
     const card = btn.closest('.rental-card');
     const rental = currentRentals.find(r => String(r.rentalId) === card.dataset.id);
-    if (!rental || isCooling(rental.rentalId, 'open')) return;
-    startCooldown(btn, rental.rentalId, 'open');
-    card.querySelector('.connect-msg').innerHTML = '<div class="alert ok">ส่งคำสั่งเปิดเครื่องแล้ว กรุณารอสักครู่ ระบบกำลังเตรียมเครื่องสำหรับการเชื่อมต่อ</div>';
+    if (rental) void openKeyWindow(rental, card);
   });
 }
 
 document.addEventListener('click', e => {
-  if (e.target.classList.contains('copy-key')) {
-    const btn = e.target;
-    navigator.clipboard.writeText(btn.dataset.key).then(() => {
-      btn.textContent = 'คัดลอกแล้ว';
-      setTimeout(() => { btn.textContent = 'คัดลอก'; }, 1500);
-    });
-  }
   if (e.target.id === 'extend-confirm') void confirmExtension();
   if (e.target.id === 'shutdown-confirm') void confirmShutdown();
 });

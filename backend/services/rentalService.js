@@ -102,7 +102,8 @@ async function book({ customerId, computerId, hours, startTime }) {
       throw error;
     }
 
-    const quote = calcQuote(Number(computer.price_per_hour), hours, parseDbDate(startTime));
+    // ไม่มีระบบจอง: เริ่มนับเวลา ณ ตอนที่ยืนยัน (ใช้เวลาของเซิร์ฟเวอร์ ไม่ใช้เวลาจากหน้าเว็บ)
+    const quote = calcQuote(Number(computer.price_per_hour), hours, new Date());
     const startSql = toDbDateTime(quote.startTime);
     const endSql = toDbDateTime(quote.endTime);
 
@@ -136,9 +137,9 @@ async function book({ customerId, computerId, hours, startTime }) {
 
     if (startsNow) {
       await conn.query(
-        `INSERT INTO session (rental_id, started_at, status, connection_enabled, access_key)
-         VALUES (?, ?, 'active', TRUE, ?)`,
-        [rentalResult.insertId, startSql, genAccessKey()]
+        `INSERT INTO session (rental_id, started_at, status, connection_enabled)
+         VALUES (?, ?, 'active', TRUE)`,
+        [rentalResult.insertId, startSql]
       );
     }
 
@@ -382,6 +383,41 @@ async function endUsage(customerId, rentalId) {
   }
 }
 
+// ผู้เช่ากด "เปิดเครื่อง" -> คืนคีย์เข้าเครื่องของเซสชันที่กำลังใช้งาน (สร้างให้ถ้ายังไม่มี)
+async function openMachine(customerId, rentalId) {
+  const [rows] = await pool.query(
+    `SELECT r.rental_id, r.end_time, c.computer_code, c.connection_method,
+            s.session_id, s.access_key, s.connection_enabled
+     FROM rental r
+     JOIN computer c ON c.computer_id = r.computer_id
+     LEFT JOIN session s ON s.rental_id = r.rental_id AND s.status = 'active'
+     WHERE r.rental_id = ? AND r.customer_id = ? AND r.status = 'active' AND r.end_time > CURRENT_TIMESTAMP`,
+    [rentalId, customerId]
+  );
+  const row = rows[0];
+  if (!row || !row.session_id || !row.connection_enabled) {
+    const error = new Error('รายการนี้ยังไม่เริ่มใช้งานหรือหมดเวลาแล้ว');
+    error.status = 400;
+    throw error;
+  }
+  let key = row.access_key;
+  if (!key) {
+    key = genAccessKey();
+    await pool.query(
+      'UPDATE session SET access_key = ? WHERE session_id = ? AND access_key IS NULL',
+      [key, row.session_id]
+    );
+    const [again] = await pool.query('SELECT access_key FROM session WHERE session_id = ?', [row.session_id]);
+    key = again[0].access_key;
+  }
+  return {
+    accessKey: key,
+    computerCode: row.computer_code,
+    connectionMethod: row.connection_method,
+    endTime: row.end_time
+  };
+}
+
 async function expireDueRentals() {
   const conn = await pool.getConnection();
   try {
@@ -417,9 +453,9 @@ async function expireDueRentals() {
       );
       if (!existing.length) {
         await conn.query(
-          `INSERT INTO session (rental_id, started_at, status, connection_enabled, access_key)
-           VALUES (?, CURRENT_TIMESTAMP, 'active', TRUE, ?)`,
-          [rental.rental_id, genAccessKey()]
+          `INSERT INTO session (rental_id, started_at, status, connection_enabled)
+           VALUES (?, CURRENT_TIMESTAMP, 'active', TRUE)`,
+          [rental.rental_id]
         );
       }
       await refreshComputerStatus(conn, rental.computer_id);
@@ -444,5 +480,6 @@ module.exports = {
   extendTime,
   saveTime,
   endUsage,
+  openMachine,
   startSessionWatcher
 };

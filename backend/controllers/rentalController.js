@@ -65,6 +65,11 @@ const endUsage = asyncHandler(async (req, res) => {
   res.json({ message: 'ปิดการใช้งานเครื่องเรียบร้อยแล้ว', rental });
 });
 
+const openMachine = asyncHandler(async (req, res) => {
+  const data = await rentalService.openMachine(req.user.customerId, req.params.id);
+  res.json(data);
+});
+
 const rate = asyncHandler(async (req, res) => {
   const rental = await rentalModel.findById(req.params.id);
   if (!rental || rental.customerId !== req.user.customerId) {
@@ -84,4 +89,4 @@ const rate = asyncHandler(async (req, res) => {
   res.json({ message: 'บันทึกคะแนนแล้ว' });
 });
 
-module.exports = { book, history, active, detail, extendTime, saveTime, endUsage, rate };
+module.exports = { book, history, active, detail, extendTime, saveTime, endUsage, openMachine, rate };
