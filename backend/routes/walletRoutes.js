@@ -1,0 +1,12 @@
+const express=require('express');
+const walletController=require('../controllers/walletController');
+const {requireAuth}=require('../middleware/auth');
+const router=express.Router();
+router.get('/',requireAuth,walletController.getWallet);
+router.post('/topup',requireAuth,walletController.topup);
+router.get('/topup/:id/status',requireAuth,walletController.topupStatus);
+router.get('/topups',requireAuth,walletController.topupHistory);
+router.post('/topup/:id/confirm',requireAuth,walletController.confirmTopup);
+router.post('/topup/:id/cancel',requireAuth,walletController.cancelTopup);
+router.post('/payment-webhook', walletController.paymentWebhook);
+module.exports=router;

@@ -1,0 +1,16 @@
+# Dependencies (reinstall with npm install)
+node_modules/
+
+# Local environment secrets
+.env
+.env.*
+!.env.example
+!.env.migration.example
+
+# Local logs
+npm-debug.log*
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.vscode/

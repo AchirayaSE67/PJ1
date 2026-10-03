@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>สมัครสมาชิก | SunFlowerPC</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="nav">
+    <a class="brand" href="/pages/index.html"><img src="/assets/logo.svg" alt=""> SunFlowerPC</a>
+    <nav class="nav-links"></nav>
+  </header>
+  <main class="container">
+    <form class="form card" id="register-form">
+      <div class="kicker">Account</div>
+      <h2>สมัครสมาชิก</h2>
+      <div id="msg"></div>
+      <label>ชื่อ-นามสกุล</label>
+      <input name="fullName" required>
+      <label>อีเมล</label>
+      <input name="email" type="email" required>
+      <label>เบอร์โทร</label>
+<input
+  name="phone"
+  type="tel"
+  inputmode="numeric"
+  pattern="[0-9]{10}"
+  minlength="10"
+  maxlength="10"
+  placeholder=""
+  autocomplete="tel"
+  oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)"
+>
+      <label>รหัสผ่าน</label>
+      <input name="password" type="password" minlength="6" required>
+      <div class="btn-row"><button class="btn" type="submit">สร้างบัญชี</button></div>
+    </form>
+  </main>
+  <script type="module" src="/js/pages/register.js"></script>
+</body>
+</html>

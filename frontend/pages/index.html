@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SunFlowerPC</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="home-page">
+  <header class="nav">
+    <a class="brand" href="/pages/index.html"><img src="/assets/logo.svg" alt=""> SunFlowerPC</a>
+    <nav class="nav-links"></nav>
+  </header>
+  <main class="container">
+    <section class="hero">
+      <div>
+        <div class="kicker">SunFlowerPC</div>
+        <h1>เลือกเครื่องที่พร้อมใช้งาน<br>แล้วเริ่มได้ทันที</h1>
+        <p>เลือกคอมพิวเตอร์ตามสเปกและเวลาที่ต้องการ ใช้งานง่าย ดูสถานะเครื่องและเวลาคงเหลือได้จากหน้าเดียว</p>
+      </div>
+      <div class="card">
+        <div class="kicker">ตอนนี้ในระบบ</div>
+        <div class="row"><span>เครื่องทั้งหมด</span><b id="stat-total">-</b></div>
+        <div class="row"><span>ว่าง</span><b id="stat-available">-</b></div>
+        <div class="row"><span>กำลังใช้งาน</span><b id="stat-inuse">-</b></div>
+      </div>
+    </section>
+      <section class="machine-showcase recommended-showcase">
+        <div class="section-heading">
+  <div class="recommended-heading">
+    <div class="kicker">Computers</div>
+    <h2>เลือกเครื่องที่พร้อมให้บริการ</h2>
+    <p class="muted">ดูสถานะ ราคา และสเปกที่จำเป็นได้อย่างรวดเร็ว</p>
+  </div>
+  <a class="btn secondary section-more" href="/pages/computers.html">ดูเครื่องทั้งหมด</a>
+</div>
+        <div id="featured" class="grid"></div>
+      </section>
+  </main>
+  <div class="modal-backdrop" id="rules-modal"><div class="modal-card rules-modal"><div class="modal-head"><div><div class="kicker">SUNFLOWERPC · RULES</div><h2>กติกาการเช่าคอมของร้าน</h2></div><button class="icon-btn" id="rules-close" aria-label="ปิด">×</button></div><div class="rules-list"><div><b>1.</b><span>เช่าแล้วไม่มีการคืนเงินในทุกกรณี</span></div><div><b>2.</b><span>สามารถเล่นเกมได้ทุกเกมที่ไม่ผิดกฎหมาย หากฝ่าฝืน ร้านมีสิทธิ์ระงับการใช้งานทันทีโดยไม่มีการคืนเงิน</span></div><div><b>3.</b><span>ห้ามใช้โปรแกรมช่วยเล่นหรือโปรแกรมที่มีผลต่อการเล่นเกมทุกประเภท หากฮาร์ดแวร์หรือเครื่องถูกแบน ผู้เช่าต้องรับผิดชอบ</span></div><div><b>4.</b><span>โปรโมชั่นหรือสิทธิพิเศษที่ได้รับ ไม่สามารถแลกเปลี่ยนหรือถอนกลับเป็นเงินสดได้ทุกกรณี</span></div><div><b>5.</b><span>ไม่มีบริการเก็บเวลาที่เหลือจากการเช่า</span></div></div><button class="btn rules-ok" id="rules-confirm">รับทราบและเข้าสู่บริการ</button></div></div>
+  <script type="module" src="/js/pages/home.js"></script>
+  <script>
+const rm=document.getElementById('rules-modal');
+const RULES_SEEN_KEY='sunflower_rules_seen';
+const closeRules=()=>{rm.classList.add('hidden');sessionStorage.setItem(RULES_SEEN_KEY,'1');};
+if(sessionStorage.getItem(RULES_SEEN_KEY)==='1') rm.classList.add('hidden');
+document.getElementById('rules-close').onclick=closeRules;
+document.getElementById('rules-confirm').onclick=closeRules;
+</script>
+</body>
+</html>

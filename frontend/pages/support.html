@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ศูนย์ช่วยเหลือ | SunFlowerPC</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="help-page">
+  <header class="nav">
+    <a class="brand" href="/pages/index.html"><img src="/assets/logo.svg" alt=""> SunFlowerPC</a>
+    <nav class="nav-links"></nav>
+  </header>
+
+  <main class="container">
+    <section class="help-hero">
+      <div class="kicker">SUNFLOWERPC · HELP CENTER</div>
+      <h1>ศูนย์ช่วยเหลือ</h1>
+      <p class="muted">รวมคำตอบสำหรับการเช่าเครื่อง การเติมเครดิต และการใช้งานบัญชี หากยังพบปัญหา สามารถแจ้ง Ticket ให้ทีมงานตรวจสอบได้</p>
+    </section>
+
+    <div class="help-categories">
+      <article class="help-category">
+        <div class="help-icon">💻</div>
+        <h3>การเช่าเครื่อง</h3>
+        <p>เลือกเครื่อง ตรวจสอบสเปก ราคา และเวลาใช้งานก่อนเริ่มเช่า</p>
+      </article>
+      <article class="help-category">
+        <div class="help-icon">💳</div>
+        <h3>การเติมเครดิต</h3>
+        <p>เติมเครดิตผ่าน QR และตรวจสอบประวัติรายการเติมเงินได้จาก Wallet</p>
+      </article>
+      <article class="help-category">
+        <div class="help-icon">👤</div>
+        <h3>บัญชีผู้ใช้งาน</h3>
+        <p>จัดการข้อมูลโปรไฟล์ รหัสผ่าน และดูประวัติการใช้งานของคุณ</p>
+      </article>
+    </div>
+
+    <div class="help-layout">
+      <section class="card">
+        <div class="kicker">FAQ</div>
+        <h2>คำถามที่พบบ่อย</h2>
+        <div class="faq-list">
+          <details class="faq-item">
+              <summary>เช่าคอมแล้วเปิดใช้งานไม่ได้ ต้องทำอย่างไร?</summary>
+               <p>ตรวจสอบก่อนว่าระบบแสดงข้อมูลเครื่องและการเชื่อมต่อครบถ้วนหรือไม่ จากนั้นลองเปิดโปรแกรมหรือเว็บไซต์สำหรับเชื่อมต่อเครื่องอีกครั้ง หากยังใช้งานไม่ได้ ให้แจ้ง Ticket พร้อมหมายเลขเครื่องและรายละเอียดปัญหาเพื่อให้ทีมงานตรวจสอบ</p>
+          </details>
+          <details class="faq-item">
+            <summary>หลังชำระเงินแล้วจะเริ่มใช้งานเครื่องอย่างไร?</summary>
+            <p>เมื่อการเช่าสำเร็จ ระบบจะแสดงข้อมูลเครื่องและรายละเอียดการเชื่อมต่อ จากนั้นจึงเริ่มใช้งานได้</p>
+          </details>
+          <details class="faq-item">
+            <summary>ถ้าเติมเครดิตแล้วมีปัญหาต้องทำอย่างไร?</summary>
+            <p>ตรวจสอบประวัติการเติมเครดิตก่อน หากยังไม่เรียบร้อย ให้แจ้ง Ticket พร้อมรายละเอียดรายการให้ทีมงานตรวจสอบ</p>
+          </details>
+          <details class="faq-item">
+            <summary>แจ้งปัญหาการใช้งานกับทีมงานได้อย่างไร?</summary>
+            <p>ใช้แบบฟอร์มแจ้งปัญหาด้านล่าง ระบบจะส่ง Ticket เข้าไปยังศูนย์ช่วยเหลือของ Admin โดยตรง</p>
+          </details>
+        </div>
+      </section>
+
+      <aside>
+        <div class="card discord-card">
+          <div class="discord-icon">◈</div>
+          <div class="kicker">CONTACT</div>
+          <h2>ติดต่อทีมงาน</h2>
+          <h3>SunFlowerPC</h3>
+          <p>ติดต่อทีมงานผ่าน Discord สำหรับสอบถามหรือขอความช่วยเหลือเพิ่มเติม</p>
+          <a class="btn" href="https://discord.gg/2hBWCX78M2" target="_blank" rel="noopener">เข้าร่วม Discord →</a>
+        </div>
+
+        <div class="card ticket-card">
+          <div class="kicker">SUPPORT TICKET</div>
+          <h2>แจ้งปัญหา</h2>
+          <p class="muted">หากพบปัญหาจากการใช้งาน สามารถส่ง Ticket ให้ทีมงานตรวจสอบได้</p>
+          <a class="btn help-ticket-link" href="#ticket-form">แจ้งปัญหาการใช้งาน</a>
+        </div>
+      </aside>
+    </div>
+
+    <section class="card" id="ticket-form" style="margin-top:16px">
+      <div class="kicker">CREATE TICKET</div>
+      <h2>ส่ง Ticket ให้ทีมงาน</h2>
+      <form id="ticket-form-element">
+        <div id="msg"></div>
+        <label>หัวข้อ</label>
+        <input name="subject" required>
+        <label>หมายเลขเครื่อง</label>
+        <select name="computerId" id="computer-select"><option value="">ไม่ระบุ</option></select>
+        <div id="computer-load-msg" class="muted form-hint"></div>
+        <label>รูปแบบปัญหา</label>
+        <select name="issueType">
+          <option value="connection">เชื่อมต่อไม่ได้</option>
+          <option value="performance">เครื่องช้า / กระตุก</option>
+          <option value="hardware">ฮาร์ดแวร์</option>
+          <option value="billing">การเงิน</option>
+          <option value="other">อื่น ๆ</option>
+        </select>
+        <label>รายละเอียด</label>
+        <textarea name="description" required></textarea>
+        <div class="btn-row"><button class="btn" type="submit">ส่ง Ticket</button></div>
+      </form>
+    </section>
+
+    <section class="card" style="margin-top:16px">
+      <div class="kicker">MY TICKETS</div>
+      <h2>Ticket ของฉัน</h2>
+      <div id="tickets"></div>
+    </section>
+  </main>
+  <script type="module" src="/js/pages/support.js"></script>
+</body>
+</html>

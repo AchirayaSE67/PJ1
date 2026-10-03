@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ตั้งค่าโปรไฟล์ | SunFlowerPC</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="nav"><a class="brand" href="/pages/index.html"><img src="/assets/logo.svg" alt=""> SunFlowerPC</a><nav class="nav-links"></nav></header>
+  <main class="container">
+
+<section class="card profile-settings-header">
+  <div class="kicker">Account Settings</div>
+  <h1>ตั้งค่าโปรไฟล์</h1>
+  <p class="muted">จัดการข้อมูลส่วนตัวและความปลอดภัยของบัญชี</p>
+</section>
+
+    <div class="profile-layout">
+      <section class="card profile-summary">
+        <div class="profile-summary-top"><span class="avatar avatar-xl" id="profile-avatar">U</span><div><h2 id="profile-name">ผู้ใช้</h2><p id="profile-email" class="profile-email">-</p></div></div>
+        <div class="profile-shortcuts">
+          <a href="/pages/wallet.html"><span>💰</span><div><strong>Wallet</strong><small>ดูยอดเงินและธุรกรรม</small></div></a>
+          <a href="/pages/rental.html"><span>💻</span><div><strong>เครื่องของฉัน</strong><small>ดูเครื่องที่กำลังใช้งาน</small></div></a>
+          <a href="/pages/history.html"><span>🕘</span><div><strong>ประวัติ</strong><small>รายการใช้งานที่ผ่านมา</small></div></a>
+        </div>
+      </section>
+
+      <div class="profile-forms">
+        <form class="card" id="profile-form">
+          <h3>ข้อมูลส่วนตัว</h3><p class="muted">ข้อมูลที่ใช้แสดงในบัญชีของคุณ</p>
+          <div id="msg"></div>
+          <label>อีเมล</label><input id="email" disabled aria-label="อีเมลบัญชี">
+          <label>ชื่อ-นามสกุล</label><input name="fullName" required>
+          <label>เบอร์โทร</label><input name="phone" placeholder="กรอกเบอร์โทร (ถ้ามี)">
+          <div class="btn-row"><button class="btn" type="submit">บันทึกการเปลี่ยนแปลง</button></div>
+        </form>
+        <form class="card" id="password-form">
+          <h3>ความปลอดภัย</h3><p class="muted">เปลี่ยนรหัสผ่านเพื่อปกป้องบัญชีของคุณ</p>
+          <div id="pw-msg"></div>
+          <label>รหัสผ่านปัจจุบัน</label><input name="currentPassword" type="password" required>
+          <label>รหัสผ่านใหม่</label><input name="newPassword" type="password" minlength="6" required>
+          <div class="btn-row"><button class="btn secondary" type="submit">เปลี่ยนรหัสผ่าน</button></div>
+        </form>
+      </div>
+    </div>
+  </main>
+  <script type="module" src="/js/pages/profile.js"></script>
+</body>
+</html>

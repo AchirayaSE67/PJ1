@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | SunFlowerPC</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="nav">
+    <a class="brand" href="/pages/index.html"><img src="/assets/logo.svg" alt=""> SunFlowerPC</a>
+    <nav class="nav-links"></nav>
+  </header>
+  <main class="container admin-page">
+    <div class="admin-hero">
+      <div>
+        <div class="kicker">SUNFLOWERPC · ADMIN</div>
+        <h1>แดชบอร์ดผู้ดูแลระบบ</h1>
+        <p class="page-subtitle">จัดการเครื่อง สมาชิก ประวัติการใช้งาน รายการจอง ประวัติเครดิต และศูนย์ช่วยเหลือจากพื้นที่สำหรับแอดมินโดยเฉพาะ</p>
+      </div>
+    </div>
+
+    <section class="admin-stats" id="admin-stats">
+      <div class="admin-stat"><span>เครื่องทั้งหมด</span><strong id="stat-computers">-</strong><small>รายการ</small></div>
+      <div class="admin-stat"><span>กำลังใช้งาน</span><strong id="stat-active">-</strong><small>เครื่อง</small></div>
+      <div class="admin-stat"><span>สมาชิก</span><strong id="stat-customers">-</strong><small>บัญชี</small></div>
+      <div class="admin-stat"><span>Ticket เปิดอยู่</span><strong id="stat-tickets">-</strong><small>รายการ</small></div>
+    </section>
+
+    <div class="admin-workspace">
+      <aside class="admin-menu card">
+        <div class="section-label">ADMIN MENU</div>
+        <button class="tab on" data-tab="computers"><span>🖥️</span> จัดการเครื่อง</button>
+        <button class="tab" data-tab="customers"><span>👥</span> จัดการสมาชิก</button>
+        <button class="tab" data-tab="rentals"><span>⏱️</span> ประวัติการใช้งาน</button>
+        <button class="tab" data-tab="reservations"><span>📅</span> รายการจอง</button>
+        <button class="tab" data-tab="wallet"><span>💰</span> ประวัติเครดิต</button>
+        <button class="tab" data-tab="tickets"><span>💬</span> ศูนย์ช่วยเหลือ</button>
+        <div class="admin-menu-note"><strong>แนะนำ</strong><span>ตรวจ Ticket ที่เปิดอยู่ก่อน แล้วค่อยจัดการเครื่องที่มีปัญหา</span></div>
+      </aside>
+
+      <div class="admin-panels">
+        <section id="panel-computers">
+          <div class="admin-section-head"><div><div class="section-label">COMPUTER MANAGEMENT</div><h2>จัดการเครื่อง</h2></div><span class="admin-section-note">เพิ่ม แก้ไข ลบ และเปลี่ยนสถานะเครื่อง</span></div>
+          <form class="card admin-form-grid" id="computer-form">
+            <div class="form-title-row"><div><h3 id="form-title">เพิ่มเครื่อง</h3><p class="muted">ข้อมูลที่กรอกจะแสดงในหน้าเครื่องให้บริการ</p></div><span class="admin-badge">ADMIN ONLY</span></div>
+            <input type="hidden" name="computerId">
+            <div class="admin-form-field"><label>หมายเลขเครื่อง</label><input name="computerCode" required placeholder="PC-007"></div>
+            <div class="admin-form-field"><label>CPU</label><input name="cpu" required placeholder="Ryzen 7 7800X3D"></div>
+            <div class="admin-form-field"><label>RAM</label><input name="ram" required placeholder="32GB"></div>
+            <div class="admin-form-field"><label>GPU</label><input name="gpu" required placeholder="RTX 5070"></div>
+            <div class="admin-form-field"><label>Storage</label><input name="storage" required placeholder="1TB SSD"></div>
+            <div class="admin-form-field"><label>ราคาต่อชั่วโมง</label><input name="pricePerHour" type="number" min="1" step="0.01" required placeholder="20"></div>
+            <div class="admin-form-field"><label>สถานะ</label><select name="status"><option value="available">พร้อมให้บริการ</option><option value="reserved">จองแล้ว</option><option value="in_use">กำลังใช้งาน</option><option value="maintenance">ปิดปรับปรุง</option></select></div>
+            <div class="admin-form-field"><label>Connection Address</label><input name="connectionAddress" value="10.0.8.20"></div>
+            <div class="admin-form-field"><label>Port</label><input name="connectionPort" type="number" value="3389"></div>
+            <div class="admin-form-field"><label>Method</label><input name="connectionMethod" value="RDP"></div>
+            <div class="btn-row admin-form-actions"><button class="btn" type="submit">บันทึกเครื่อง</button><button class="btn secondary" type="button" id="reset-form">ล้างฟอร์ม</button></div>
+            <div id="computer-form-msg"></div>
+          </form>
+          <div class="card admin-table-card"><div id="computer-table"></div></div>
+        </section>
+        <section id="panel-customers" class="hidden"><div class="admin-section-head"><div><div class="section-label">CUSTOMERS</div><h2>สมาชิก</h2></div><span class="admin-section-note">ดูบัญชีและเครดิตของสมาชิก</span></div><div class="card admin-table-card" id="customer-table"></div></section>
+        <section id="panel-rentals" class="hidden"><div class="admin-section-head"><div><div class="section-label">USAGE</div><h2>ประวัติการใช้งาน</h2></div></div><div class="card admin-table-card" id="rental-table"></div></section>
+        <section id="panel-reservations" class="hidden"><div class="admin-section-head"><div><div class="section-label">RESERVATIONS</div><h2>รายการจอง</h2></div></div><div class="card admin-table-card" id="reservation-table"></div></section>
+        <section id="panel-wallet" class="hidden"><div class="admin-section-head"><div><div class="section-label">FINANCE</div><h2>ประวัติเครดิต</h2></div><span class="admin-section-note">แสดงข้อมูลแบบอ่านอย่างเดียว</span></div><div class="card admin-table-card" id="wallet-table"></div></section>
+        <section id="panel-tickets" class="hidden"><div class="admin-section-head"><div><div class="section-label">SUPPORT CENTER</div><h2>ศูนย์ช่วยเหลือ</h2></div><span class="admin-section-note">อ่านปัญหา ตอบกลับ และเปลี่ยนสถานะ</span></div><div id="ticket-table"></div></section>
+      </div>
+    </div>
+  </main>
+  <script type="module" src="/js/pages/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เครดิตและการเงิน | SunFlowerPC</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header class="nav">
+  <a class="brand" href="/pages/index.html">
+    <img src="/assets/logo.svg" alt="">
+    <span>SunFlowerPC</span>
+  </a>
+  <nav class="nav-links"></nav>
+</header>
+
+<main class="container finance-page">
+  <div class="page-heading finance-hero-card">
+    <div class="kicker">SUNFLOWERPC · FINANCE</div>
+    <h1>ศูนย์การเงิน</h1>
+    <p class="page-subtitle">จัดการเครดิต เติมเงิน และตรวจสอบรายการทางการเงินของคุณได้จากที่เดียว</p>
+  </div>
+
+  <section class="finance-summary">
+    <div class="balance-card">
+      <div class="balance-label">เครดิตคงเหลือ</div>
+      <div class="balance-value" id="balance">฿0.00</div>
+      <div class="balance-note">เครดิตสำหรับใช้บริการเช่าเครื่อง</div>
+    </div>
+  </section>
+
+  <section class="topup-layout">
+    <div class="card topup-card" id="topup">
+      <div class="section-label">เติมเครดิต</div>
+      <h2>เติมเครดิตเข้าบัญชี</h2>
+      <p class="muted">เลือกยอดเครดิตที่ต้องการ แล้วสแกน QR ของร้านตามยอดที่เลือก</p>
+      <div id="msg"></div>
+
+      <div class="amount-grid">
+        <button class="amount-btn" data-amount="100"><strong>฿100</strong><span>เริ่มต้น</span></button>
+        <button class="amount-btn" data-amount="200"><strong>฿200</strong><span>ยอดนิยม</span></button>
+        <button class="amount-btn" data-amount="500"><strong>฿500</strong><span>คุ้มค่า</span></button>
+        <button class="amount-btn" data-amount="1000"><strong>฿1,000</strong><span>สำหรับใช้งานต่อเนื่อง</span></button>
+      </div>
+
+      <div class="custom-amount">
+        <label for="custom-amount">ระบุยอดเครดิตที่ต้องการ</label>
+        <div class="input-action">
+          <input id="custom-amount" type="number" min="10" step="1" placeholder="เช่น 300">
+          <button class="btn" id="topup-custom">ดำเนินการต่อ</button>
+        </div>
+      </div>
+
+      <div class="payment-note">
+        <span class="note-icon">✓</span>
+        <div><strong>ชำระเงินง่าย ปลอดภัย</strong><small>QR เป็นรูปภาพของร้านสำหรับใช้ชำระเงินตามยอดที่เลือก หลังชำระเงินให้ติดต่อร้านเพื่อยืนยัน</small></div>
+      </div>
+    </div>
+
+    <div id="payment-box" class="card payment-box hidden">
+      <div class="payment-head">
+        <div>
+          <div class="section-label">ช่องทางชำระเงิน</div>
+          <h2>สแกน QR เพื่อชำระเงิน</h2>
+          <p class="muted">ยอดที่ต้องชำระ <strong id="payment-amount">฿0.00</strong></p>
+        </div>
+      </div>
+
+      <div class="qr-frame">
+        <img id="payment-qr" class="payment-qr" src="/assets/payment-qr.png" alt="QR สำหรับชำระเงิน">
+      </div>
+
+      <div class="payment-info">
+        <div><span>ยอดที่เลือก</span><strong id="payment-amount-copy">ดูด้านบน</strong></div>
+        <div><span>การยืนยัน</span><strong>ติดต่อร้านหลังชำระเงิน</strong></div>
+      </div>
+
+      <div class="alert" id="payment-note-text">สแกน QR แล้วโอนตามยอด จากนั้นกดยืนยันว่าโอนแล้ว ระบบจะตรวจสอบรายการ</div>
+      <div class="payment-actions">
+        <button class="btn btn-secondary" id="payment-cancel" type="button">ยกเลิก</button>
+        <button class="btn" id="payment-confirm" type="button">ยืนยันว่าโอนแล้ว</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="transaction-section">
+    <div class="section-label">TRANSACTION HISTORY</div>
+    <h2>ประวัติการเงิน</h2>
+    <div class="card table-card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>วันและเวลา</th><th>รายละเอียด</th><th>จำนวนเครดิต</th><th>สถานะ</th></tr></thead>
+          <tbody id="tx-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+<div id="payment-checking" class="payment-modal hidden">
+  <div class="payment-modal-card">
+    <div class="spinner"></div>
+    <h2>กำลังตรวจสอบ</h2>
+    <p>กำลังตรวจสอบยอดเงินที่โอนเข้ามา กรุณารอสักครู่</p>
+  </div>
+</div>
+
+<div id="payment-result" class="payment-modal hidden">
+  <div class="payment-modal-card result-card">
+    <div class="result-icon"></div>
+    <h2 class="result-title"></h2>
+    <p class="result-text"></p>
+    <button class="btn" id="payment-result-close" type="button">ปิด</button>
+  </div>
+</div>
+</main>
+
+<script type="module" src="/js/pages/wallet.js"></script>
+</body>
+</html>
