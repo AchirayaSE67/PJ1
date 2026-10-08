@@ -9,7 +9,7 @@
 
 ## Reason
 
-The user confirmed that Supabase project `finaly` is an isolated test project, but no database connection was present in the local environment. The shared Render deployment was inspected read-only and login was verified; state-changing booking tests were not executed against it. `npm ci` completed, `node --check tests/rental-booking.db.test.js` passed, and `git diff --check` found no whitespace errors. A preflight run stopped before connecting or writing because `TEST_DB_ISOLATED` and `TEST_DATABASE_URL` were unset. The four integration cases remain unexecuted.
+The user confirmed that Supabase project `finaly` is an isolated test project, and its Table Editor shows the required table names. No database connection was present in the local environment, so live columns and the four integration cases remain unverified. The shared Render deployment was inspected read-only and login was verified; state-changing booking tests were not executed against it. `npm ci` completed, JavaScript and PowerShell syntax checks passed, and `git diff --check` found no whitespace errors. A preflight run stopped before connecting or writing because `TEST_DB_ISOLATED` and `TEST_DATABASE_URL` were unset. A guided runner now prompts for the Session pooler URI and hidden database password, checks the live schema, and runs the suite locally once those credentials are available.
 
 ## Planned cases
 

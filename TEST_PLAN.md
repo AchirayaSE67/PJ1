@@ -21,8 +21,8 @@ The suite creates uniquely named customer, wallet, and computer fixtures in an i
 
 1. Use the separate Supabase PostgreSQL test project `finaly`, never the database behind the shared Render deployment. The database must already contain the application's current tables. Do not run `database/schema.sql` against a populated project because it drops tables.
 2. Install Node.js dependencies with `npm ci`. The test runner creates its own verified customer, mock wallet, and computers; `npm run seed` is not needed and must not be used as a routine test step.
-3. Configure the local server with protected environment variables for the test database connection (`DATABASE_URL`), `DB_SSL=true`, and a local `JWT_SECRET`. Do not create a `.env` file in the project folder or put credentials in source files or reports.
-4. Start the application with `npm start`. For the test process, set `TEST_DATABASE_URL` to the same isolated database, `DB_SSL=true`, `TEST_DB_ISOLATED=yes`, and `TEST_BASE_URL=http://localhost:3000`; then run `npm run test:rental`.
+3. Run `powershell -NoProfile -File scripts/run-rental-tests.ps1` and enter the test project's Session pooler URI and database password at the prompts. The script sets temporary environment variables, checks the schema, starts the local server, and runs `npm run test:rental`. Do not create a `.env` file in the project folder or put credentials in source files or reports.
+4. If running manually, point both `DATABASE_URL` and `TEST_DATABASE_URL` to the same isolated database, set `DB_SSL=true`, `TEST_DB_ISOLATED=yes`, `TEST_BASE_URL=http://localhost:3000`, and a local `JWT_SECRET`, then start `npm start` before `npm run test:rental`.
 5. Save the test runner output, execution date, Git commit, and PASS/FAIL result for each case in `TEST_REPORT.md`. Record any database assertions or defects separately from the plan.
 
 The booking request requires `computerId`, `hours`, and `startTime`. The server currently starts a successful rental at confirmation time, regardless of the submitted `startTime`; the tests check that behavior rather than assume a future reservation.
