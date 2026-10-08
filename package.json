@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node backend/server.js",
     "dev": "node --watch backend/server.js",
-    "seed": "node database/seed.js"
+    "seed": "node database/seed.js",
+    "test:rental": "node --test tests/rental-booking.db.test.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
