@@ -1,7 +1,7 @@
 # Rental booking test execution report
 
 - Date prepared: 2026-10-08 (Asia/Bangkok)
-- Test work branch: `test-rent-pc` (local, based on `main`)
+- Test work branch: `test-rent-pc` in the `AchirayaSE67/PJ1` fork (based on `main`)
 - Target commit: `075071bb91b6077a3166bd18372db7bb5f53356d`
 - Suite: `tests/rental-booking.db.test.js`
 - Command: `npm run test:rental`
