@@ -129,15 +129,19 @@ test('TC-01 creates and reads a rental with the correct database effects', async
   assert.equal(Number(detail.data.rental.rentalId), Number(rentalId));
   assert.equal(Number(detail.data.rental.customerId), customerId);
 
+  const computerDetail = await api(`/computers/${computerIds[0]}`, { auth: false });
+  assert.equal(computerDetail.status, 200);
+  assert.equal(computerDetail.data.computer.status, 'in_use');
+  assert.equal(Number(computerDetail.data.computer.activeRentalId), Number(rentalId));
+
   const stored = await db.query(
     `SELECT r.reservation_id, r.status AS rental_status, r.price,
             v.status AS reservation_status, s.status AS session_status,
-            c.status AS computer_status, t.amount AS transaction_amount,
+            t.amount AS transaction_amount,
             t.method AS transaction_method
      FROM rental r
      JOIN reservation v ON v.reservation_id = r.reservation_id
      JOIN session s ON s.rental_id = r.rental_id
-     JOIN computer c ON c.computer_id = r.computer_id
      JOIN wallet_transaction t ON t.rental_id = r.rental_id
      WHERE r.rental_id = $1 AND r.customer_id = $2`,
     [rentalId, customerId]
@@ -146,7 +150,6 @@ test('TC-01 creates and reads a rental with the correct database effects', async
   assert.equal(stored.rows[0].rental_status, 'active');
   assert.equal(stored.rows[0].reservation_status, 'confirmed');
   assert.equal(stored.rows[0].session_status, 'active');
-  assert.equal(stored.rows[0].computer_status, 'in_use');
   assert.equal(stored.rows[0].transaction_method, 'wallet');
   assert.equal(Number(stored.rows[0].price), 25);
   assert.equal(Number(stored.rows[0].transaction_amount), -25);

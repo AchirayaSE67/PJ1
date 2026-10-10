@@ -30,6 +30,8 @@ foreach ($name in $envNames) {
 
 $serverProcess = $null
 $containerStarted = $false
+$serverLog = Join-Path $env:TEMP ("pj1-rental-server-$containerName.log")
+$serverErrorLog = Join-Path $env:TEMP ("pj1-rental-server-$containerName.err.log")
 try {
   $env:POSTGRES_PASSWORD = $localPassword
   & docker run --detach --name $containerName --publish "127.0.0.1:${port}:5432" --env POSTGRES_PASSWORD postgres:16-alpine | Out-Null
@@ -64,7 +66,7 @@ try {
   if ($LASTEXITCODE -ne 0) { throw 'Database preflight failed.' }
 
   $nodePath = (Get-Command node -ErrorAction Stop).Source
-  $serverProcess = Start-Process -FilePath $nodePath -ArgumentList 'backend/server.js' -WorkingDirectory $repoRoot -WindowStyle Hidden -PassThru
+  $serverProcess = Start-Process -FilePath $nodePath -ArgumentList 'backend/server.js' -WorkingDirectory $repoRoot -WindowStyle Hidden -RedirectStandardOutput $serverLog -RedirectStandardError $serverErrorLog -PassThru
 
   $ready = $false
   for ($attempt = 0; $attempt -lt 30; $attempt++) {
@@ -79,13 +81,18 @@ try {
   if (-not $ready) { throw 'Local server did not become ready on port 3000.' }
 
   & npm run test:rental
-  if ($LASTEXITCODE -ne 0) { throw 'At least one rental test failed. Review the test output above.' }
+  if ($LASTEXITCODE -ne 0) {
+    if (Test-Path -LiteralPath $serverErrorLog) { Get-Content -LiteralPath $serverErrorLog }
+    if (Test-Path -LiteralPath $serverLog) { Get-Content -LiteralPath $serverLog }
+    throw 'At least one rental test failed. Review the test output above.'
+  }
   Write-Host 'All four rental tests passed.'
 } finally {
   if ($null -ne $serverProcess -and -not $serverProcess.HasExited) {
     Stop-Process -Id $serverProcess.Id -ErrorAction SilentlyContinue
   }
   if ($containerStarted) { & docker rm --force $containerName | Out-Null }
+  Remove-Item -LiteralPath $serverLog, $serverErrorLog -ErrorAction SilentlyContinue
   foreach ($name in $envNames) {
     if ($null -eq $previous[$name]) {
       Remove-Item -Path "Env:$name" -ErrorAction SilentlyContinue

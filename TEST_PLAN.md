@@ -10,7 +10,7 @@ The API supports Create, Read, and ending a rental (status update), but has no r
 
 | ID | Action | Expected result |
 | --- | --- | --- |
-| TC-01 | Create a one-hour rental for an available computer with sufficient mock-wallet credit | HTTP 201 and an active rental ID. Read returns the same rental. Reservation, rental, session, and wallet transaction exist; the wallet decreases by the price and the computer becomes `in_use`. |
+| TC-01 | Create a one-hour rental for an available computer with sufficient mock-wallet credit | HTTP 201 and an active rental ID. Read returns the same rental. Reservation, rental, session, and wallet transaction exist; the wallet decreases by the price and the computer API displays `in_use` with the active rental ID. |
 | TC-02 | Request a rental costing more than the mock-wallet balance | HTTP 400; no new records or wallet change. |
 | TC-03 | Attempt to rent a computer in `maintenance` | HTTP 400; no new records or wallet change. |
 | TC-04 | Submit a booking without `computerId` | HTTP 400; no new records. |
