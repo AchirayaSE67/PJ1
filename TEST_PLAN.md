@@ -2,31 +2,27 @@
 
 ## Scope
 
-Core feature: a customer creates a computer rental using the application's wallet balance. The source is the current `main` branch; this test work is on `test-rent-pc`. The backend uses Supabase PostgreSQL. These tests cover the booking endpoint and its main business rules, without exercising a real payment provider.
+Core feature: a customer creates a computer rental using mock wallet balance. Source: the PJ1 `main` branch; test work: `test-rent-pc`. The application uses Supabase PostgreSQL, while this suite runs on disposable local PostgreSQL to protect the database used by the Render deployment.
 
-The rental API supports Create, Read, and ending an active rental (a status update). It has no rental Delete endpoint. The four cases focus on the required Create flow and its rejection paths, so they are not presented as a complete CRUD suite.
+The API supports Create, Read, and ending a rental (status update), but has no rental Delete endpoint. The four cases cover the required Create flow and principal rejection paths, not full CRUD.
 
 ## Cases
 
 | ID | Action | Expected result |
 | --- | --- | --- |
-| TC-01 | Create a one-hour rental for an available computer using a verified customer with sufficient mock-wallet credit | HTTP 201 with a rental ID, customer ID, computer ID, and active status. A subsequent read returns the same rental. The matching reservation, rental, session, and wallet transaction exist; the wallet decreases by the quoted price and the computer becomes `in_use`. |
-| TC-02 | Request a rental whose price exceeds the customer's mock-wallet balance | HTTP 400 with an insufficient-balance message. No new reservation, rental, session, or wallet transaction remains, and the wallet balance is unchanged. |
-| TC-03 | Attempt to rent a computer in `maintenance` status | HTTP 400 with a maintenance message. No rental-related records are created and the wallet balance is unchanged. |
-| TC-04 | Submit a booking without the required `computerId` | HTTP 400 with a required-data message. No rental-related records are created. |
+| TC-01 | Create a one-hour rental for an available computer with sufficient mock-wallet credit | HTTP 201 and an active rental ID. Read returns the same rental. Reservation, rental, session, and wallet transaction exist; the wallet decreases by the price and the computer becomes `in_use`. |
+| TC-02 | Request a rental costing more than the mock-wallet balance | HTTP 400; no new records or wallet change. |
+| TC-03 | Attempt to rent a computer in `maintenance` | HTTP 400; no new records or wallet change. |
+| TC-04 | Submit a booking without `computerId` | HTTP 400; no new records. |
 
-The suite creates uniquely named customer, wallet, and computer fixtures in an isolated database. Teardown ends the rental and removes only those fixtures and their linked rows. Failed booking cases must leave no partial records.
+The suite creates its own verified customer, wallet, and computers. It ends its successful rental and removes its fixtures during normal teardown. Rejected bookings must not leave partial records.
 
-## Setup and execution
+## Execution and evidence
 
-1. Use the separate Supabase PostgreSQL test project `finaly`, never the database behind the shared Render deployment. The database must already contain the application's current tables. Do not run `database/schema.sql` against a populated project because it drops tables.
-2. Install Node.js dependencies with `npm ci`. The test runner creates its own verified customer, mock wallet, and computers; `npm run seed` is not needed and must not be used as a routine test step.
-3. Run `powershell -NoProfile -File scripts/run-rental-tests.ps1` and enter the test project's Session pooler URI and database password at the prompts. The script sets temporary environment variables, checks the schema, starts the local server, and runs `npm run test:rental`. Do not create a `.env` file in the project folder or put credentials in source files or reports.
-4. If running manually, point both `DATABASE_URL` and `TEST_DATABASE_URL` to the same isolated database, set `DB_SSL=true`, `TEST_DB_ISOLATED=yes`, `TEST_BASE_URL=http://localhost:3000`, and a local `JWT_SECRET`, then start `npm start` before `npm run test:rental`.
-5. Save the test runner output, execution date, Git commit, and PASS/FAIL result for each case in `TEST_REPORT.md`. Record any database assertions or defects separately from the plan.
+Run `npm ci`, start Docker Desktop, then run `powershell -NoProfile -File scripts/run-rental-tests.ps1`. The runner uses a fresh local PostgreSQL container, initializes `database/schema.sql` there, starts the local API, checks the schema, runs `npm run test:rental`, and removes the container. Record the date, commit, per-case result, and any defects in `TEST_REPORT.md`.
 
-The booking request requires `computerId`, `hours`, and `startTime`. The server currently starts a successful rental at confirmation time, regardless of the submitted `startTime`; the tests check that behavior rather than assume a future reservation.
+The booking request requires `computerId`, `hours`, and `startTime`. The current server starts the rental at confirmation time; these tests do not assume future scheduling.
 
-## Database and payment safety
+## Safety and limitations
 
-`database/schema.sql` drops application tables before recreating them, and `npm run seed` replaces application data. Use either only when intentionally preparing an empty, isolated test project. The suite generates its own mock-wallet credit; do not invoke top-up, PromptPay QR, payment webhook, or real-money flows.
+The junior confirmed the Render website uses Supabase project `finaly`. It is not an isolated test project. Never point the suite, destructive schema initialization, or seed command at it. The test file enforces a loopback database URL. Mock wallet credit is created as a fixture; top-up, PromptPay QR, payment webhooks, and real money are outside scope. A passing local run validates application/database behavior, not the live Supabase deployment.

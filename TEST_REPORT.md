@@ -1,23 +1,22 @@
 # Rental booking test execution report
 
-- Date prepared: 2026-10-08 (Asia/Bangkok)
-- Test work branch: `test-rent-pc` in the `AchirayaSE67/PJ1` fork (based on `main`)
-- Target commit: `075071bb91b6077a3166bd18372db7bb5f53356d`
+- Updated: 2026-10-10 (Asia/Bangkok)
+- Test branch: `test-rent-pc` in `AchirayaSE67/PJ1`, based on `main`
+- Source commit: `075071bb91b6077a3166bd18372db7bb5f53356d`
 - Suite: `tests/rental-booking.db.test.js`
-- Command: `npm run test:rental`
-- Result: **Not executed against a database yet**
+- Result: **Pending local PostgreSQL execution; Docker Desktop engine is not running**
 
-## Reason
+## Environment decision
 
-The user confirmed that Supabase project `finaly` is an isolated test project, and its Table Editor shows the required table names. No database connection was present in the local environment, so live columns and the four integration cases remain unverified. The shared Render deployment was inspected read-only and login was verified; state-changing booking tests were not executed against it. `npm ci` completed, JavaScript and PowerShell syntax checks passed, and `git diff --check` found no whitespace errors. A preflight run stopped before connecting or writing because `TEST_DB_ISOLATED` and `TEST_DATABASE_URL` were unset. A guided runner now prompts for the Session pooler URI and hidden database password, checks the live schema, and runs the suite locally once those credentials are available.
+The junior confirmed the deployed Render website uses Supabase project `finaly`. The earlier assumption that it was isolated was incorrect. No database-changing tests were run against it, and its supplied credentials were not used. The runner now uses a fresh, disposable local PostgreSQL container and the test file rejects non-local database URLs. On 2026-10-10, a deliberate non-local URL check failed before any connection or write, as intended. JavaScript syntax, PowerShell parsing, and `git diff --check` passed. Docker CLI is installed, but its engine is not running, so the four integration cases have not been executed.
 
-## Planned cases
+## Cases
 
 | Case | Expected result | Status |
 | --- | --- | --- |
-| TC-01 Create rental successfully | HTTP 201, readable active rental, linked database rows, exact mock-wallet deduction | NOT RUN |
-| TC-02 Insufficient mock-wallet balance | HTTP 400, no persistent writes or wallet change | NOT RUN |
-| TC-03 Maintenance computer | HTTP 400, no persistent writes or wallet change | NOT RUN |
-| TC-04 Missing required booking data | HTTP 400, no persistent writes | NOT RUN |
+| TC-01 Successful create/read | HTTP 201, linked records, exact mock-wallet debit | NOT RUN |
+| TC-02 Insufficient balance | HTTP 400, no writes | NOT RUN |
+| TC-03 Maintenance computer | HTTP 400, no writes | NOT RUN |
+| TC-04 Missing computer ID | HTTP 400, no writes | NOT RUN |
 
-After a disposable test database is configured, run the command above and replace this status with the Node test-runner output. The suite creates and removes its own fixtures; do not run the destructive seed script as a routine test step.
+Start Docker Desktop, run `powershell -NoProfile -File scripts/run-rental-tests.ps1`, then replace the pending status with actual output. A local pass does not establish that the hosted Supabase project has the same schema or behavior.

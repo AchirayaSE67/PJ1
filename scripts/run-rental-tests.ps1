@@ -8,33 +8,20 @@ if (-not (Test-Path -LiteralPath (Join-Path $repoRoot 'node_modules'))) {
   throw 'Dependencies are missing. Run npm ci in the PJ1 folder first.'
 }
 
-$template = Read-Host 'Paste the finaly Session pooler URI, leaving [YOUR-PASSWORD] unchanged'
-if (-not $template.Contains('[YOUR-PASSWORD]')) {
-  throw 'The URI must contain [YOUR-PASSWORD]. Do not paste a URI that already contains the password.'
+& docker info --format '{{.ServerVersion}}' *> $null
+if ($LASTEXITCODE -ne 0) { throw 'Docker Desktop is not running. Start it and run this script again.' }
+if (Get-NetTCPConnection -State Listen -LocalPort 3000 -ErrorAction SilentlyContinue) {
+  throw 'Port 3000 is already in use. Stop the existing local server before this run.'
 }
 
-$password = Read-Host 'Database password (hidden)' -AsSecureString
-$plainPassword = [System.Net.NetworkCredential]::new('', $password).Password
-$databaseUrl = $template.Replace('[YOUR-PASSWORD]', [System.Uri]::EscapeDataString($plainPassword))
-$plainPassword = $null
-$password.Dispose()
-
-try {
-  $uri = [System.Uri]::new($databaseUrl)
-} catch {
-  throw 'The connection URI is invalid. Copy it again from Supabase Connect > Session pooler.'
-}
-if ($uri.Scheme -notin @('postgres', 'postgresql') -or
-    -not $uri.Host.EndsWith('.pooler.supabase.com') -or
-    $uri.Port -ne 5432 -or
-    $uri.AbsolutePath -ne '/postgres') {
-  throw 'Use the Session pooler URI from Supabase Connect (pooler host, port 5432, database postgres).'
+$port = 55432
+if (Get-NetTCPConnection -State Listen -LocalPort $port -ErrorAction SilentlyContinue) {
+  throw "Port $port is already in use. Stop that service before this run."
 }
 
-$confirmation = Read-Host 'Type YES to confirm this URI is for the separate finaly test project'
-if ($confirmation -cne 'YES') { throw 'Test run cancelled before any database write.' }
-
-$envNames = @('DATABASE_URL', 'TEST_DATABASE_URL', 'DB_SSL', 'JWT_SECRET', 'TEST_DB_ISOLATED', 'TEST_BASE_URL', 'PORT')
+$containerName = 'pj1-rental-test-' + [System.Guid]::NewGuid().ToString('N').Substring(0, 12)
+$localPassword = [System.Guid]::NewGuid().ToString('N')
+$envNames = @('DATABASE_URL', 'TEST_DATABASE_URL', 'DB_SSL', 'JWT_SECRET', 'TEST_DB_ISOLATED', 'TEST_BASE_URL', 'PORT', 'POSTGRES_PASSWORD')
 $previous = @{}
 foreach ($name in $envNames) {
   $item = Get-Item -Path "Env:$name" -ErrorAction SilentlyContinue
@@ -42,22 +29,39 @@ foreach ($name in $envNames) {
 }
 
 $serverProcess = $null
+$containerStarted = $false
 try {
-  if (Get-NetTCPConnection -State Listen -LocalPort 3000 -ErrorAction SilentlyContinue) {
-    throw 'Port 3000 is already in use. Stop the existing local server before this run.'
-  }
+  $env:POSTGRES_PASSWORD = $localPassword
+  & docker run --detach --name $containerName --publish "127.0.0.1:${port}:5432" --env POSTGRES_PASSWORD postgres:16-alpine | Out-Null
+  if ($LASTEXITCODE -ne 0) { throw 'Could not start disposable PostgreSQL container.' }
+  $containerStarted = $true
 
+  $ready = $false
+  for ($attempt = 0; $attempt -lt 60; $attempt++) {
+    & docker exec $containerName pg_isready -U postgres -d postgres *> $null
+    if ($LASTEXITCODE -eq 0) { $ready = $true; break }
+    Start-Sleep -Milliseconds 500
+  }
+  if (-not $ready) { throw 'Disposable PostgreSQL did not become ready.' }
+
+  & docker cp 'database/schema.sql' "${containerName}:/tmp/schema.sql"
+  if ($LASTEXITCODE -ne 0) { throw 'Could not copy schema into disposable PostgreSQL.' }
+  & docker exec $containerName psql -v ON_ERROR_STOP=1 -U postgres -d postgres -f /tmp/schema.sql | Out-Null
+  if ($LASTEXITCODE -ne 0) { throw 'Schema initialization failed.' }
+
+  $databaseUrl = "postgresql://postgres:${localPassword}@127.0.0.1:${port}/postgres"
   $env:DATABASE_URL = $databaseUrl
   $env:TEST_DATABASE_URL = $databaseUrl
-  $env:DB_SSL = 'true'
+  $env:DB_SSL = 'false'
   $env:JWT_SECRET = [System.Guid]::NewGuid().ToString('N')
   $env:TEST_DB_ISOLATED = 'yes'
   $env:TEST_BASE_URL = 'http://localhost:3000'
   $env:PORT = '3000'
   $databaseUrl = $null
+  $localPassword = $null
 
   & node scripts/rental-db-preflight.js
-  if ($LASTEXITCODE -ne 0) { throw 'Database preflight failed; no test fixtures were created.' }
+  if ($LASTEXITCODE -ne 0) { throw 'Database preflight failed.' }
 
   $nodePath = (Get-Command node -ErrorAction Stop).Source
   $serverProcess = Start-Process -FilePath $nodePath -ArgumentList 'backend/server.js' -WorkingDirectory $repoRoot -WindowStyle Hidden -PassThru
@@ -81,6 +85,7 @@ try {
   if ($null -ne $serverProcess -and -not $serverProcess.HasExited) {
     Stop-Process -Id $serverProcess.Id -ErrorAction SilentlyContinue
   }
+  if ($containerStarted) { & docker rm --force $containerName | Out-Null }
   foreach ($name in $envNames) {
     if ($null -eq $previous[$name]) {
       Remove-Item -Path "Env:$name" -ErrorAction SilentlyContinue

@@ -9,7 +9,9 @@ const databaseUrl = process.env.TEST_DATABASE_URL;
 const runId = crypto.randomBytes(5).toString('hex');
 
 assert.equal(process.env.TEST_DB_ISOLATED, 'yes', 'Tests not run: set TEST_DB_ISOLATED=yes only for a disposable test database');
-assert.ok(databaseUrl, 'Tests not run: set TEST_DATABASE_URL to the isolated Supabase PostgreSQL database');
+assert.ok(databaseUrl, 'Tests not run: set TEST_DATABASE_URL to a disposable local PostgreSQL database');
+const databaseHost = new URL(databaseUrl).hostname;
+assert.ok(['localhost', '127.0.0.1', '::1', '[::1]'].includes(databaseHost), 'Tests not run: TEST_DATABASE_URL must point to local PostgreSQL, never the Render/Supabase database');
 const hostname = new URL(baseUrl).hostname;
 assert.ok(['localhost', '127.0.0.1', '::1', '[::1]'].includes(hostname), 'Tests not run: TEST_BASE_URL must point to a local test server');
 
