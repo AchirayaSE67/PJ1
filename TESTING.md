@@ -9,7 +9,8 @@ The project has four Node.js API/database integration cases and four Python Play
 3. Install Chromium once with `python -m playwright install chromium`.
 4. Start Docker Desktop and wait until its engine is running.
 5. Run `powershell -NoProfile -File scripts/run-rental-tests.ps1` from this folder. Ports 3000 and 55432 must be free. The first run may download the official `postgres:16-alpine` image.
-6. Record the test output in `TEST_REPORT.md` for the submission. Do not copy credentials or tokens.
+6. The runner records one 1280x720 Playwright video per UI case under `test-results/videos/<run timestamp>/`, using filenames `UI-01-*.webm` through `UI-04-*.webm`. It also creates `video-manifest.json` in that folder.
+7. Record the test output and video links in the submission sheet. Do not copy credentials or tokens.
 
 No Supabase URL, API key, database password, or `.env` file is needed for this local run. The script generates a temporary password and JWT secret in memory and clears email-provider settings while the test server runs. It refuses to run if Docker is unavailable or the ports are occupied. Both test suites refuse non-local database URLs, even when launched manually.
 

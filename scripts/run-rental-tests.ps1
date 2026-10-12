@@ -27,7 +27,7 @@ if (Get-NetTCPConnection -State Listen -LocalPort $port -ErrorAction SilentlyCon
 
 $containerName = 'pj1-rental-test-' + [System.Guid]::NewGuid().ToString('N').Substring(0, 12)
 $localPassword = [System.Guid]::NewGuid().ToString('N')
-$envNames = @('DATABASE_URL', 'TEST_DATABASE_URL', 'DB_SSL', 'JWT_SECRET', 'TEST_DB_ISOLATED', 'TEST_BASE_URL', 'PORT', 'POSTGRES_PASSWORD', 'BREVO_API_KEY', 'MAIL_FROM_EMAIL')
+$envNames = @('DATABASE_URL', 'TEST_DATABASE_URL', 'DB_SSL', 'JWT_SECRET', 'TEST_DB_ISOLATED', 'TEST_BASE_URL', 'TEST_VIDEO_DIR', 'TEST_VIDEO_STEP_DELAY_MS', 'PORT', 'POSTGRES_PASSWORD', 'BREVO_API_KEY', 'MAIL_FROM_EMAIL')
 $previous = @{}
 foreach ($name in $envNames) {
   $item = Get-Item -Path "Env:$name" -ErrorAction SilentlyContinue
@@ -38,6 +38,8 @@ $serverProcess = $null
 $containerStarted = $false
 $serverLog = Join-Path $env:TEMP ("pj1-rental-server-$containerName.log")
 $serverErrorLog = Join-Path $env:TEMP ("pj1-rental-server-$containerName.err.log")
+$runStamp = Get-Date -Format 'yyyyMMdd-HHmmss'
+$videoDir = Join-Path $repoRoot "test-results\videos\$runStamp"
 try {
   $env:POSTGRES_PASSWORD = $localPassword
   & docker run --detach --name $containerName --publish "127.0.0.1:${port}:5432" --env POSTGRES_PASSWORD postgres:16-alpine | Out-Null
@@ -64,6 +66,8 @@ try {
   $env:JWT_SECRET = [System.Guid]::NewGuid().ToString('N')
   $env:TEST_DB_ISOLATED = 'yes'
   $env:TEST_BASE_URL = 'http://localhost:3000'
+  $env:TEST_VIDEO_DIR = $videoDir
+  $env:TEST_VIDEO_STEP_DELAY_MS = '700'
   $env:PORT = '3000'
   # Registration in UI tests must never send email outside the local test app.
   $env:BREVO_API_KEY = ''
@@ -101,7 +105,21 @@ try {
     if (Test-Path -LiteralPath $serverLog) { Get-Content -LiteralPath $serverLog }
     throw 'At least one Playwright UI test failed. Review the test output above.'
   }
+  $videoFiles = @(Get-ChildItem -LiteralPath $videoDir -Filter '*.webm' -File)
+  if ($videoFiles.Count -ne 4) {
+    throw "Expected four per-case Playwright videos but found $($videoFiles.Count) in $videoDir."
+  }
+  $manifest = [ordered]@{
+    generated_at = (Get-Date).ToString('o')
+    test_command = 'powershell -NoProfile -File scripts/run-rental-tests.ps1'
+    result = 'PASS'
+    videos = @($videoFiles | Sort-Object Name | ForEach-Object {
+      [ordered]@{ case_id = $_.BaseName.Split('-')[0..1] -join '-'; file_name = $_.Name; local_path = $_.FullName }
+    })
+  }
+  $manifest | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $videoDir 'video-manifest.json') -Encoding utf8
   Write-Host 'All eight API and Playwright rental tests passed.'
+  Write-Host "Four Playwright evidence videos were saved to: $videoDir"
 } finally {
   if ($null -ne $serverProcess -and -not $serverProcess.HasExited) {
     Stop-Process -Id $serverProcess.Id -ErrorAction SilentlyContinue

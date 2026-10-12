@@ -3,6 +3,8 @@ node_modules/
 __pycache__/
 *.py[cod]
 test-results/
+artifact-work/
+outputs/
 
 # Local environment secrets
 .env

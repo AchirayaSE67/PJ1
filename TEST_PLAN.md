@@ -28,7 +28,7 @@ The API suite creates its own verified customer, wallet, and computers. The UI s
 
 ## Execution and evidence
 
-Run `npm ci`, install the browser-test dependencies with `python -m pip install -r requirements-test.txt`, install Chromium with `python -m playwright install chromium`, start Docker Desktop, then run `powershell -NoProfile -File scripts/run-rental-tests.ps1`. The runner uses a fresh local PostgreSQL container, initializes `database/schema.sql` there, starts the local API, checks the schema, runs the four Node API tests and four Python Playwright UI tests, and removes the container. Record the date, commit, per-case result, and any defects in `TEST_REPORT.md`.
+Run `npm ci`, install the browser-test dependencies with `python -m pip install -r requirements-test.txt`, install Chromium with `python -m playwright install chromium`, start Docker Desktop, then run `powershell -NoProfile -File scripts/run-rental-tests.ps1`. The runner uses a fresh local PostgreSQL container, initializes `database/schema.sql` there, starts the local API, checks the schema, runs the four Node API tests and four Python Playwright UI tests, records one 1280x720 WebM video for each UI case, and removes the container. The videos and their manifest are written under `test-results/videos/<run timestamp>/`. Record the date, commit, per-case result, and uploaded video link in the submission sheet.
 
 The booking request requires `computerId`, `hours`, and `startTime`. The current server starts the rental at confirmation time; these tests do not assume future scheduling.
 

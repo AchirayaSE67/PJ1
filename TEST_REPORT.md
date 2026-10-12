@@ -8,6 +8,7 @@
 - Command: `powershell -NoProfile -File scripts/run-rental-tests.ps1`
 - Environment: local Node.js server and a fresh, disposable `postgres:16-alpine` container
 - Result: **PASS — 8/8 cases (4 API + 4 browser UI)**
+- Video evidence run: `test-results/videos/20261012-133453/` — 4 WebM files, one per Playwright UI case
 
 ## Environment and safety
 
@@ -32,3 +33,14 @@ The junior confirmed the deployed Render website uses Supabase project `finaly`.
 | UI-04 Missing start time | Invalid-selection message appears and no confirmation button is rendered | PASS |
 
 Node summary: 4 passed, 0 failed. Playwright summary: 4 passed, 0 failed. A prior investigation found that the stored `computer.status` column stays `available` after booking, while `GET /api/computers/:id` correctly reports `in_use` from the active rental. The API test verifies the user-facing API status and active rental ID; the stored-column difference remains an observation for the project team. A local pass does not prove the hosted deployment has the same schema or behavior.
+
+## Submission evidence
+
+| Case | Video file |
+| --- | --- |
+| UI-01 | `UI-01-successful-rental.webm` |
+| UI-02 | `UI-02-insufficient-wallet.webm` |
+| UI-03 | `UI-03-maintenance-computer.webm` |
+| UI-04 | `UI-04-missing-start-time.webm` |
+
+The runner generated these files at 1280x720 and created `video-manifest.json` in the same folder. The four videos were uploaded to the submission Drive folder, and their URLs were recorded in the native Google Sheet titled **PJ1 PC Rental Automated Test Cases and Video Evidence**.

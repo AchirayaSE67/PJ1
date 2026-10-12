@@ -10,6 +10,7 @@ import re
 import unittest
 import uuid
 from datetime import datetime, timezone
+from pathlib import Path
 from urllib.parse import urlencode
 
 import psycopg
@@ -20,6 +21,12 @@ BASE_URL = os.environ.get("TEST_BASE_URL", "http://localhost:3000").rstrip("/")
 DATABASE_URL = os.environ.get("TEST_DATABASE_URL", "")
 RUN_ID = uuid.uuid4().hex[:10].upper()
 PASSWORD = "RentalUiTest123!"
+VIDEO_CASES = {
+    "test_01_customer_can_book_an_available_computer": ("UI-01", "successful-rental"),
+    "test_02_customer_sees_error_when_wallet_is_insufficient": ("UI-02", "insufficient-wallet"),
+    "test_03_maintenance_computer_has_no_booking_controls": ("UI-03", "maintenance-computer"),
+    "test_04_booking_page_rejects_missing_start_time": ("UI-04", "missing-start-time"),
+}
 
 
 def _assert_isolated_test_environment() -> None:
@@ -112,16 +119,44 @@ class RentalBookingUiTests(unittest.TestCase):
             db.execute("DELETE FROM customer WHERE customer_id = %s", (cls.customer_id,))
 
     def setUp(self) -> None:
-        self.context = self.browser.new_context()
+        context_options = {"viewport": {"width": 1280, "height": 720}}
+        video_dir = os.environ.get("TEST_VIDEO_DIR")
+        self.video_target = None
+        if video_dir:
+            case_id, slug = VIDEO_CASES[self._testMethodName]
+            evidence_dir = Path(video_dir).resolve()
+            evidence_dir.mkdir(parents=True, exist_ok=True)
+            self.video_target = evidence_dir / f"{case_id}-{slug}.webm"
+            context_options.update(
+                {
+                    "record_video_dir": str(evidence_dir),
+                    "record_video_size": {"width": 1280, "height": 720},
+                }
+            )
+        self.context = self.browser.new_context(**context_options)
         self.page = self.context.new_page()
+        self.video = self.page.video
         self.page.goto(f"{BASE_URL}/pages/login.html", wait_until="networkidle")
         self.page.locator('input[name="email"]').fill(self.email)
         self.page.locator('input[name="password"]').fill(PASSWORD)
+        self._evidence_pause()
         self.page.locator('#login-form button[type="submit"]').click()
         self.page.wait_for_url(re.compile(r"/pages/index\.html$"), timeout=10_000)
+        self._evidence_pause()
 
     def tearDown(self) -> None:
         self.context.close()
+        if self.video_target and self.video:
+            original_video = Path(self.video.path()).resolve()
+            self.video.save_as(str(self.video_target))
+            if original_video != self.video_target and original_video.exists():
+                original_video.unlink()
+            print(f"Video evidence: {self.video_target}")
+
+    def _evidence_pause(self) -> None:
+        delay_ms = int(os.environ.get("TEST_VIDEO_STEP_DELAY_MS", "0"))
+        if delay_ms > 0:
+            self.page.wait_for_timeout(delay_ms)
 
     def test_01_customer_can_book_an_available_computer(self) -> None:
         computer_id = self.computers["OK"]
@@ -129,14 +164,17 @@ class RentalBookingUiTests(unittest.TestCase):
         self.page.goto(f"{BASE_URL}/pages/computer.html?id={computer_id}", wait_until="networkidle")
         self.page.locator(".booking-panel").wait_for()
         self.page.locator("#hours").select_option("1")
+        self._evidence_pause()
         self.page.locator("#go-book").click()
         self.page.wait_for_url(re.compile(r"/pages/booking\.html\?"), timeout=10_000)
         self.page.get_by_role("heading", name=re.compile("ตรวจสอบและยืนยันการใช้บริการ")).wait_for()
+        self._evidence_pause()
         self.page.locator("#confirm").click()
         self.page.wait_for_url(re.compile(r"/pages/rental\.html$"), timeout=10_000)
         rental_card = self.page.locator(f'.rental-card:has-text("{code}")')
         rental_card.wait_for(timeout=10_000)
         self.assertIn("กำลังใช้งาน", rental_card.inner_text())
+        self._evidence_pause()
 
     def test_02_customer_sees_error_when_wallet_is_insufficient(self) -> None:
         computer_id = self.computers["LOW"]
@@ -150,11 +188,13 @@ class RentalBookingUiTests(unittest.TestCase):
             ).fetchone()
         self.page.goto(f"{BASE_URL}/pages/booking.html?{query}", wait_until="networkidle")
         self.page.locator("#confirm").wait_for()
+        self._evidence_pause()
         self.page.locator("#confirm").click()
         alert = self.page.locator("#msg .alert.error")
         alert.wait_for(timeout=10_000)
         self.assertRegex(alert.inner_text(), re.compile("ไม่เพียงพอ"))
         self.assertTrue(self.page.locator("#confirm").is_enabled())
+        self._evidence_pause()
         with psycopg.connect(DATABASE_URL) as db:
             after = db.execute(
                 """SELECT (SELECT COUNT(*) FROM rental WHERE customer_id = %s),
@@ -170,6 +210,7 @@ class RentalBookingUiTests(unittest.TestCase):
         self.page.get_by_text("เครื่องนี้อยู่ระหว่างการปรับปรุงและยังไม่เปิดให้จอง").wait_for()
         self.assertFalse(self.page.locator("#go-book").count())
         self.assertTrue(self.page.locator(".badge.maintenance").is_visible())
+        self._evidence_pause()
 
     def test_04_booking_page_rejects_missing_start_time(self) -> None:
         computer_id = self.computers["OK"]
@@ -180,6 +221,7 @@ class RentalBookingUiTests(unittest.TestCase):
         self.page.locator(".alert.error").wait_for()
         self.assertIn("ข้อมูลการเลือกเครื่องหรือเวลาไม่ถูกต้อง", self.page.locator(".alert.error").inner_text())
         self.assertFalse(self.page.locator("#confirm").count())
+        self._evidence_pause()
 
 
 if __name__ == "__main__":
