@@ -16,6 +16,8 @@ The project has four Node.js API/database integration cases and four Python Play
 
 - Thai test-case sheet: https://docs.google.com/spreadsheets/d/1hgbC4VGbdiqOzfaoWg3mdwNEV3ZFbDzfV1Easa-nGTA/edit
 - Video evidence folder: https://drive.google.com/drive/folders/1y7S-wy22CktGN-TUO12uVjVyGnj3c1cB
+- Downloadable test package: https://drive.google.com/file/d/1wT2X4cecf2heEDELYvPgYDXfT4fCF8-7/view
+- Machine-readable result summary: https://drive.google.com/file/d/1w43XrUY117D2tc6Q3ODTWXAQDRn-RrDU/view
 - Upstream pull request: https://github.com/thanathiwong-svg/PJ1/pull/2
 
 No Supabase URL, API key, database password, or `.env` file is needed for this local run. The script generates a temporary password and JWT secret in memory and clears email-provider settings while the test server runs. It refuses to run if Docker is unavailable or the ports are occupied. Both test suites refuse non-local database URLs, even when launched manually.

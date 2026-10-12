@@ -38,6 +38,8 @@ Node summary: 4 passed, 0 failed. Playwright summary: 4 passed, 0 failed. A prio
 
 - Thai submission sheet: https://docs.google.com/spreadsheets/d/1hgbC4VGbdiqOzfaoWg3mdwNEV3ZFbDzfV1Easa-nGTA/edit
 - Video evidence folder: https://drive.google.com/drive/folders/1y7S-wy22CktGN-TUO12uVjVyGnj3c1cB
+- Downloadable test package: https://drive.google.com/file/d/1wT2X4cecf2heEDELYvPgYDXfT4fCF8-7/view
+- Machine-readable result summary: https://drive.google.com/file/d/1w43XrUY117D2tc6Q3ODTWXAQDRn-RrDU/view
 - Pull request: https://github.com/thanathiwong-svg/PJ1/pull/2
 
 | Case | Video file |
