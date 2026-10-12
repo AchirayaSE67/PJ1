@@ -7,6 +7,12 @@ Set-Location -LiteralPath $repoRoot
 if (-not (Test-Path -LiteralPath (Join-Path $repoRoot 'node_modules'))) {
   throw 'Dependencies are missing. Run npm ci in the PJ1 folder first.'
 }
+try {
+  & python -c 'import playwright, psycopg' *> $null
+  if ($LASTEXITCODE -ne 0) { throw 'missing Python test packages' }
+} catch {
+  throw 'Python test dependencies are missing. Run python -m pip install -r requirements-test.txt first.'
+}
 
 & docker info --format '{{.ServerVersion}}' *> $null
 if ($LASTEXITCODE -ne 0) { throw 'Docker Desktop is not running. Start it and run this script again.' }
@@ -21,7 +27,7 @@ if (Get-NetTCPConnection -State Listen -LocalPort $port -ErrorAction SilentlyCon
 
 $containerName = 'pj1-rental-test-' + [System.Guid]::NewGuid().ToString('N').Substring(0, 12)
 $localPassword = [System.Guid]::NewGuid().ToString('N')
-$envNames = @('DATABASE_URL', 'TEST_DATABASE_URL', 'DB_SSL', 'JWT_SECRET', 'TEST_DB_ISOLATED', 'TEST_BASE_URL', 'PORT', 'POSTGRES_PASSWORD')
+$envNames = @('DATABASE_URL', 'TEST_DATABASE_URL', 'DB_SSL', 'JWT_SECRET', 'TEST_DB_ISOLATED', 'TEST_BASE_URL', 'PORT', 'POSTGRES_PASSWORD', 'BREVO_API_KEY', 'MAIL_FROM_EMAIL')
 $previous = @{}
 foreach ($name in $envNames) {
   $item = Get-Item -Path "Env:$name" -ErrorAction SilentlyContinue
@@ -59,6 +65,9 @@ try {
   $env:TEST_DB_ISOLATED = 'yes'
   $env:TEST_BASE_URL = 'http://localhost:3000'
   $env:PORT = '3000'
+  # Registration in UI tests must never send email outside the local test app.
+  $env:BREVO_API_KEY = ''
+  $env:MAIL_FROM_EMAIL = ''
   $databaseUrl = $null
   $localPassword = $null
 
@@ -86,7 +95,13 @@ try {
     if (Test-Path -LiteralPath $serverLog) { Get-Content -LiteralPath $serverLog }
     throw 'At least one rental test failed. Review the test output above.'
   }
-  Write-Host 'All four rental tests passed.'
+  & python tests/rental-booking.ui.test.py
+  if ($LASTEXITCODE -ne 0) {
+    if (Test-Path -LiteralPath $serverErrorLog) { Get-Content -LiteralPath $serverErrorLog }
+    if (Test-Path -LiteralPath $serverLog) { Get-Content -LiteralPath $serverLog }
+    throw 'At least one Playwright UI test failed. Review the test output above.'
+  }
+  Write-Host 'All eight API and Playwright rental tests passed.'
 } finally {
   if ($null -ne $serverProcess -and -not $serverProcess.HasExited) {
     Stop-Process -Id $serverProcess.Id -ErrorAction SilentlyContinue

@@ -2,7 +2,7 @@
 
 ## Scope
 
-Core feature: a customer creates a computer rental using mock wallet balance. Source: the PJ1 `main` branch; test work: `test-rent-pc`. The application uses Supabase PostgreSQL, while this suite runs on disposable local PostgreSQL to protect the database used by the Render deployment.
+Core feature: a customer creates a computer rental using mock wallet balance. Source: the PJ1 `main` branch; test work: `test-rent-pc-playwright`. The application uses Supabase PostgreSQL, while these suites run on disposable local PostgreSQL to protect the database used by the Render deployment.
 
 The API supports Create, Read, and ending a rental (status update), but has no rental Delete endpoint. The four cases cover the required Create flow and principal rejection paths, not full CRUD.
 
@@ -15,11 +15,20 @@ The API supports Create, Read, and ending a rental (status update), but has no r
 | TC-03 | Attempt to rent a computer in `maintenance` | HTTP 400; no new records or wallet change. |
 | TC-04 | Submit a booking without `computerId` | HTTP 400; no new records. |
 
-The suite creates its own verified customer, wallet, and computers. It ends its successful rental and removes its fixtures during normal teardown. Rejected bookings must not leave partial records.
+The API suite creates its own verified customer, wallet, and computers. The UI suite registers a uniquely named test customer through the local app, verifies that account in the disposable database, and creates separate available, expensive, and maintenance computers. Each suite removes its own fixtures during teardown. Rejected bookings must not leave partial records.
+
+## Browser cases
+
+| ID | Action | Expected result |
+| --- | --- | --- |
+| UI-01 | Log in, choose an available computer, select one hour, and confirm the booking | The browser reaches “My Machines” and displays the new active rental for the selected computer. |
+| UI-02 | Confirm a booking whose price exceeds the test wallet balance | The page displays the insufficient-credit error and keeps the confirmation button available; no rental is created. |
+| UI-03 | Open a computer in maintenance | The maintenance status and explanation are visible; booking controls are absent. |
+| UI-04 | Open the booking confirmation page without a start time | The page displays the invalid-selection message and does not render a confirmation button. |
 
 ## Execution and evidence
 
-Run `npm ci`, start Docker Desktop, then run `powershell -NoProfile -File scripts/run-rental-tests.ps1`. The runner uses a fresh local PostgreSQL container, initializes `database/schema.sql` there, starts the local API, checks the schema, runs `npm run test:rental`, and removes the container. Record the date, commit, per-case result, and any defects in `TEST_REPORT.md`.
+Run `npm ci`, install the browser-test dependencies with `python -m pip install -r requirements-test.txt`, install Chromium with `python -m playwright install chromium`, start Docker Desktop, then run `powershell -NoProfile -File scripts/run-rental-tests.ps1`. The runner uses a fresh local PostgreSQL container, initializes `database/schema.sql` there, starts the local API, checks the schema, runs the four Node API tests and four Python Playwright UI tests, and removes the container. Record the date, commit, per-case result, and any defects in `TEST_REPORT.md`.
 
 The booking request requires `computerId`, `hours`, and `startTime`. The current server starts the rental at confirmation time; these tests do not assume future scheduling.
 

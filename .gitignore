@@ -1,5 +1,8 @@
 # Dependencies (reinstall with npm install)
 node_modules/
+__pycache__/
+*.py[cod]
+test-results/
 
 # Local environment secrets
 .env

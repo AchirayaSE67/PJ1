@@ -1,15 +1,17 @@
-# Rental booking API tests
+# Rental booking automated tests
 
-The four cases call the local application API and verify PostgreSQL records. The runner creates a disposable local PostgreSQL 16 container, initializes its schema, starts the local server, runs the cases, and removes the container. It uses mock wallet credit only; no real-money payment is called.
+The project has four Node.js API/database integration cases and four Python Playwright browser cases. The UI suite checks the real booking pages and visible outcomes in Chromium. The runner creates a disposable local PostgreSQL 16 container, initializes its schema, starts the local server, runs both suites, and removes the container. It uses mock wallet credit only; no real-money payment is called.
 
 ## Setup and execution
 
 1. Install Node.js dependencies with `npm ci` in this checkout.
-2. Start Docker Desktop and wait until its engine is running.
-3. Run `powershell -NoProfile -File scripts/run-rental-tests.ps1` from this folder. Ports 3000 and 55432 must be free. The first run may download the official `postgres:16-alpine` image.
-4. Copy the test output and results into `TEST_REPORT.md` for the submission. Do not copy credentials or tokens.
+2. Install browser test dependencies with `python -m pip install -r requirements-test.txt`.
+3. Install Chromium once with `python -m playwright install chromium`.
+4. Start Docker Desktop and wait until its engine is running.
+5. Run `powershell -NoProfile -File scripts/run-rental-tests.ps1` from this folder. Ports 3000 and 55432 must be free. The first run may download the official `postgres:16-alpine` image.
+6. Record the test output in `TEST_REPORT.md` for the submission. Do not copy credentials or tokens.
 
-No Supabase URL, API key, database password, or `.env` file is needed for this local run. The script generates a temporary password and JWT secret in memory. It refuses to run if Docker is unavailable or the ports are occupied. The test file also refuses non-local database URLs, even when launched manually.
+No Supabase URL, API key, database password, or `.env` file is needed for this local run. The script generates a temporary password and JWT secret in memory and clears email-provider settings while the test server runs. It refuses to run if Docker is unavailable or the ports are occupied. Both test suites refuse non-local database URLs, even when launched manually.
 
 The project `finaly` is used by the deployed Render website. **Do not run this suite, `database/schema.sql`, or `npm run seed` against `finaly`.** The schema script drops tables; it is used here only inside a fresh, disposable local container. An interrupted run may leave a container named `pj1-rental-test-*`; inspect it before removing it.
 
