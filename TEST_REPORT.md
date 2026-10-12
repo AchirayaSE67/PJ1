@@ -36,6 +36,10 @@ Node summary: 4 passed, 0 failed. Playwright summary: 4 passed, 0 failed. A prio
 
 ## Submission evidence
 
+- Thai submission sheet: https://docs.google.com/spreadsheets/d/1hgbC4VGbdiqOzfaoWg3mdwNEV3ZFbDzfV1Easa-nGTA/edit
+- Video evidence folder: https://drive.google.com/drive/folders/1y7S-wy22CktGN-TUO12uVjVyGnj3c1cB
+- Pull request: https://github.com/thanathiwong-svg/PJ1/pull/2
+
 | Case | Video file |
 | --- | --- |
 | UI-01 | `UI-01-successful-rental.webm` |
@@ -43,4 +47,4 @@ Node summary: 4 passed, 0 failed. Playwright summary: 4 passed, 0 failed. A prio
 | UI-03 | `UI-03-maintenance-computer.webm` |
 | UI-04 | `UI-04-missing-start-time.webm` |
 
-The runner generated these files at 1280x720 and created `video-manifest.json` in the same folder. The four videos were uploaded to the submission Drive folder, and their URLs were recorded in the native Google Sheet titled **PJ1 PC Rental Automated Test Cases and Video Evidence**.
+The runner generated these files at 1280x720 and created `video-manifest.json` in the same folder. The four videos were uploaded to the submission Drive folder, and their URLs were recorded in the native Google Sheet titled **PJ1 กรณีทดสอบระบบเช่าคอมพิวเตอร์และวิดีโอหลักฐาน**. The sheet contains Thai test descriptions for the four Playwright cases and the four supplemental API cases.
